@@ -24,8 +24,10 @@ public class BulkFlowComputer {
 
         Pair<Float, Float> averageH = bulk.getAverageH(x, y);
 
-        float firstPart = (bulk.getAverageQ(x, y).getLeft() / averageH.getLeft()) * ((curCell.ux - leftCell.ux) / Config.CELL_SIZE);
-        float secondPart = (upCell.qy / averageH.getLeft()) * ((curCell.ux - upCell.ux) / Config.CELL_SIZE);
+        float firstPart = averageH.getLeft() == 0 ? 0
+                : (bulk.getAverageQ(x, y).getLeft() / averageH.getLeft()) * ((curCell.ux - leftCell.ux) / Config.CELL_SIZE);
+        float secondPart = averageH.getLeft() == 0 ? 0
+                : (upCell.qy / averageH.getLeft()) * ((curCell.ux - upCell.ux) / Config.CELL_SIZE);
         float thirdPart = Config.GRAVITY * (bulk.getCell(x + 1, y).h - curCell.h) / Config.CELL_SIZE;
 
         return -1 * (firstPart + secondPart + thirdPart);
@@ -38,8 +40,10 @@ public class BulkFlowComputer {
 
         Pair<Float, Float> averageH = bulk.getAverageH(x, y);
 
-        float firstPart = (leftCell.qx / averageH.getRight()) * ((curCell.uy - leftCell.uy) / Config.CELL_SIZE);
-        float secondPart = (bulk.getAverageQ(x, y).getRight() / averageH.getRight()) * ((curCell.uy - upCell.uy) / Config.CELL_SIZE);
+        float firstPart = averageH.getRight() == 0 ? 0
+                : (leftCell.qx / averageH.getRight()) * ((curCell.uy - leftCell.uy) / Config.CELL_SIZE);
+        float secondPart = averageH.getRight() == 0 ? 0
+                : (bulk.getAverageQ(x, y).getRight() / averageH.getRight()) * ((curCell.uy - upCell.uy) / Config.CELL_SIZE);
         float thirdPart = Config.GRAVITY * (bulk.getCell(x, y + 1).h - curCell.h) / Config.CELL_SIZE;
 
         return -1 * (firstPart + secondPart + thirdPart);
