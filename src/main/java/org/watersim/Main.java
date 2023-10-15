@@ -6,7 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
         // read grid h values
-        var grid = new Grid("grids/simple_water.txt");
+        var grid = new Grid("grids/simple/input.txt");
 
         // set q velocities
         for (int y = 0; y <= grid.HEIGHT + 1; y++) {
@@ -16,11 +16,13 @@ public class Main {
             }
         }
 
-        System.out.println(grid);
+        String outPath = "grids/simple/out%s.txt";
 
-        for (int i = 0; i < 10; i++) {
+        grid.dump(outPath.formatted(0));
+
+        for (int i = 1; i <= 10; i++) {
             grid = simulateTimeStep(grid);
-            System.out.println(grid);
+            grid.dump(outPath.formatted(i));
         }
     }
 

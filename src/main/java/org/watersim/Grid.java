@@ -3,9 +3,12 @@ package org.watersim;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,8 +43,27 @@ public class Grid {
             throw new RuntimeException(e);
         }
 
-        this.WIDTH = charsList.get(0).length;
-        this.HEIGHT = charsList.size();
+        List<String[]> heightsList = new ArrayList<>();
+        List<String[]> velocitiesXList = new ArrayList<>();
+        List<String[]> velocitiesYList = new ArrayList<>();
+
+        int listIndex = 0;
+        for (String[] line : charsList) {
+            if (line[0].equals("-")) {
+                listIndex++;
+                continue;
+            }
+
+            switch (listIndex) {
+                case 0 -> heightsList.add(line);
+                case 1 -> velocitiesXList.add(line);
+                case 2 -> velocitiesYList.add(line);
+                default -> throw new RuntimeException();
+            }
+        }
+
+        this.WIDTH = heightsList.get(0).length;
+        this.HEIGHT = heightsList.size();
 
         cells = new Cell[HEIGHT + 2][WIDTH + 2];
 
@@ -51,6 +73,11 @@ public class Grid {
 
                 if (y > 0 && x > 0 && y <= HEIGHT && x <= WIDTH) {
                     cells[y][x].h = Float.parseFloat(charsList.get(y - 1)[x - 1]);
+
+                    if (listIndex > 0) {
+                        cells[y][x].qx = Float.parseFloat(velocitiesXList.get(y - 1)[x - 1]);
+                        cells[y][x].qy = Float.parseFloat(velocitiesYList.get(y - 1)[x - 1]);
+                    }
                 }
             }
         }
@@ -60,15 +87,40 @@ public class Grid {
     public String toString() {
         var builder = new StringBuilder();
 
-        for (int y = 1; y <= HEIGHT; y++) {
-            for (int x = 1; x <= WIDTH; x++) {
-                builder.append(getCell(x, y).h);
-                builder.append(" ");
+        for (int i = 0; i < 3; i++) {
+            for (int y = 1; y <= HEIGHT; y++) {
+                for (int x = 1; x <= WIDTH; x++) {
+                    Cell cell = getCell(x, y);
+                    builder.append(switch (i) {
+                        case 0 -> cell.h;
+                        case 1 -> cell.qx;
+                        case 2 -> cell.qy;
+                        default -> throw new RuntimeException();
+                    });
+                    builder.append(" ");
+                }
+                builder.append("\n");
             }
-            builder.append("\n");
+            builder.append("-\n");
         }
 
         return builder.toString();
+    }
+
+    public void dump(String path) {
+        Path filePath = Paths.get(path);
+        try {
+            Files.createFile(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write(toString());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Grid copy() {
@@ -141,5 +193,17 @@ public class Grid {
         float averageYQ = (topCell.qy + cell.qy) / 2;
 
         return new ImmutablePair<>(averageXQ, averageYQ);
+    }
+
+    public float totalVolume() {
+        float total = 0;
+
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
+                total += getCell(x, y).h;
+            }
+        }
+
+        return total;
     }
 }
