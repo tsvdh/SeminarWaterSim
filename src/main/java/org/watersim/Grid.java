@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class Grid {
 
-    private Cell[][] cells;
+    private final Cell[][] cells;
 
     public final int WIDTH, HEIGHT;
 
@@ -58,7 +58,6 @@ public class Grid {
                 case 0 -> heightsList.add(line);
                 case 1 -> velocitiesXList.add(line);
                 case 2 -> velocitiesYList.add(line);
-                default -> throw new RuntimeException();
             }
         }
 
