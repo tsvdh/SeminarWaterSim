@@ -21,12 +21,12 @@ public class Main {
         String outPath = "grids/simple_correct/out%s.txt";
         grid.dump(outPath.formatted(0));
 
-        for (int i = 1; i <= 100; i++) {
+        for (; Config.FRAME <= 100; Config.FRAME++) {
             Grid newGrid = simulateTimeStep(prevGrid, grid);
             prevGrid = grid;
             grid = newGrid;
 
-            grid.dump(outPath.formatted(i));
+            grid.dump(outPath.formatted(Config.FRAME));
         }
     }
 
@@ -39,7 +39,7 @@ public class Main {
             for (int x = 1; x <= grid.WIDTH; x++) {
                 Cell cell = bulk.getCell(x, y);
 
-                Pair<Float, Float> averageH = prevBulk.getAverageH(x, y);
+                Pair<Float, Float> averageH = prevBulk.getUpwindH(x, y);
 
                 // do not compute for border
                 if (x < grid.WIDTH)
@@ -70,7 +70,7 @@ public class Main {
             for (int x = 1; x <= grid.WIDTH; x++) {
                 Cell cell = newBulk.getCell(x, y);
 
-                Pair<Float, Float> averageH = bulk.getAverageH(x, y);
+                Pair<Float, Float> averageH = bulk.getUpwindH(x, y);
 
                 // do not compute for border
                 if (x < grid.WIDTH)
@@ -87,9 +87,9 @@ public class Main {
                 Cell leftCell = newBulk.getCell(x - 1, y);
                 Cell upCell = newBulk.getCell(x, y - 1);
 
-                float divergence = (cell.qx - leftCell.qx) + (cell.qy - upCell.qy);
+                float divergence = (cell.qx - leftCell.qx) / Config.CELL_SIZE + (cell.qy - upCell.qy) / Config.CELL_SIZE;
 
-                divergence *= -1; // TODO: determine flip necessary
+                divergence *= -1;
 
                 cell.h = bulk.getCell(x, y).h + divergence * Config.TIME_STEP;
             }

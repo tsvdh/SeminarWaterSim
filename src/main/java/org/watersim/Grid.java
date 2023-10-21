@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,7 +107,9 @@ public class Grid {
 
     public void dump(String path) {
         Path filePath = Paths.get(path);
+
         try {
+            Files.deleteIfExists(filePath);
             Files.createFile(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -142,11 +143,11 @@ public class Grid {
         cells[y][x] = newCell;
     }
 
-    private boolean xInActive(int x) {
+    private boolean xActive(int x) {
         return x > 0 && x <= WIDTH;
     }
 
-    private boolean yInActive(int y) {
+    private boolean yActive(int y) {
         return y > 0 && y <= HEIGHT;
     }
 
@@ -158,29 +159,71 @@ public class Grid {
         return y >= 0 && y <= HEIGHT + 1;
     }
 
-    public Pair<Float, Float> getAverageH(int x, int y) {
-        Float thisH = (xInActive(x) && yInActive(y)) ? getCell(x, y).h : null;
-        Float xH = (xInActive(x + 1) && yInActive(y)) ? getCell(x + 1, y).h : null;
-        Float yH = (xInActive(x) && yInActive(y + 1)) ? getCell(x, y + 1).h : null;
+    public Pair<Float, Float> getUpwindH(int x, int y) {
+        Float thisH = (xActive(x) && yActive(y)) ? getCell(x, y).h : null;
+        Float xH = (xActive(x + 1) && yActive(y)) ? getCell(x + 1, y).h : null;
+        Float yH = (xActive(x) && yActive(y + 1)) ? getCell(x, y + 1).h : null;
 
-        Float averageXH, averageYH;
+        Float upwindXH, upwindYH;
 
-        if (thisH != null && xH != null) {
-            averageXH = (thisH + xH) / 2;
+        if (thisH == null && xH == null) {
+            upwindXH = null;
+        } else if (thisH == null) {
+            upwindXH = xH;
         } else if (xH == null) {
-            averageXH = thisH;
+            upwindXH = thisH;
         } else {
-            averageXH = xH;
-        }
-        if (thisH != null && yH != null) {
-            averageYH = (thisH + yH) / 2;
-        } else if (yH == null) {
-            averageYH = thisH;
-        } else {
-            averageYH = yH;
+            float u = getCell(x, y).ux;
+            if (u > 0) {
+                upwindXH = thisH;
+            } else if (u < 0) {
+                upwindXH = xH;
+            } else {
+                upwindXH = Math.max(thisH, xH);
+            }
         }
 
-        return new ImmutablePair<>(averageXH, averageYH);
+        if (thisH == null && yH == null) {
+            upwindYH = null;
+        } else if (thisH == null) {
+            upwindYH = yH;
+        } else if (yH == null) {
+            upwindYH = thisH;
+        } else {
+            float u = getCell(x, y).uy;
+            if (u > 0) {
+                upwindYH = thisH;
+            } else if (u < 0) {
+                upwindYH = yH;
+            } else {
+                upwindYH = Math.max(thisH, yH);
+            }
+        }
+
+        return new ImmutablePair<>(upwindXH, upwindYH);
+
+        // Float thisH = (xInActive(x) && yInActive(y)) ? getCell(x, y).h : null;
+        // Float xH = (xInActive(x + 1) && yInActive(y)) ? getCell(x + 1, y).h : null;
+        // Float yH = (xInActive(x) && yInActive(y + 1)) ? getCell(x, y + 1).h : null;
+        // //
+        // Float averageXH, averageYH;
+        //
+        // if (thisH != null && xH != null) {
+        //     averageXH = (thisH + xH) / 2;
+        // } else if (xH == null) {
+        //     averageXH = thisH;
+        // } else {
+        //     averageXH = xH;
+        // }
+        // if (thisH != null && yH != null) {
+        //     averageYH = (thisH + yH) / 2;
+        // } else if (yH == null) {
+        //     averageYH = thisH;
+        // } else {
+        //     averageYH = yH;
+        // }
+        //
+        // return new ImmutablePair<>(averageXH, averageYH);
     }
 
     public Pair<Float, Float> getAverageQ(int x, int y) {
