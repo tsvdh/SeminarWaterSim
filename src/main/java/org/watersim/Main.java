@@ -2,11 +2,19 @@ package org.watersim;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Main {
 
     public static void main(String[] args) {
+        String name = "simple_1d";
+        int numFrames = 300;
+
         // read grid h values
-        var grid = new Grid("grids/simple_correct/input.txt");
+        var grid = new Grid("grids/input/%s.txt".formatted(name));
 
         // set q velocities
         for (int y = 0; y <= grid.HEIGHT + 1; y++) {
@@ -18,15 +26,23 @@ public class Main {
 
         Grid prevGrid = grid.copy();
 
-        String outPath = "grids/simple_correct/out%s.txt";
-        grid.dump(outPath.formatted(0));
+        String outPath = "grids/output/%s/%s.txt";
 
-        for (; Config.FRAME <= 100; Config.FRAME++) {
+        Path parentPath = Paths.get(outPath.formatted(name, 0)).getParent();
+        try {
+            Files.createDirectories(parentPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        grid.dump(outPath.formatted(name, 0));
+
+        for (; Config.FRAME <= numFrames; Config.FRAME++) {
             Grid newGrid = simulateTimeStep(prevGrid, grid);
             prevGrid = grid;
             grid = newGrid;
 
-            grid.dump(outPath.formatted(Config.FRAME));
+            grid.dump(outPath.formatted(name, Config.FRAME));
         }
     }
 
@@ -39,13 +55,13 @@ public class Main {
             for (int x = 1; x <= grid.WIDTH; x++) {
                 Cell cell = bulk.getCell(x, y);
 
-                Pair<Float, Float> averageH = prevBulk.getUpwindH(x, y);
+                Pair<Float, Float> upwindH = prevBulk.getUpwindH(x, y);
 
                 // do not compute for border
                 if (x < grid.WIDTH)
-                    cell.ux = averageH.getLeft() == 0 ? 0 : cell.qx / averageH.getLeft();
+                    cell.ux = upwindH.getLeft() == 0 ? 0 : cell.qx / upwindH.getLeft();
                 if (y < grid.HEIGHT)
-                    cell.uy = averageH.getRight() == 0 ? 0 : cell.qy / averageH.getRight();
+                    cell.uy = upwindH.getRight() == 0 ? 0 : cell.qy / upwindH.getRight();
             }
         }
 
@@ -54,14 +70,15 @@ public class Main {
         // compute new bulk values
         for (int y = 1; y <= grid.HEIGHT; y++) {
             for (int x = 1; x <= grid.WIDTH; x++) {
-
-                // newBulk.getCell(x, y).h += BulkFlowComputer.computeHDerivative(x, y, bulk) * Config.TIME_STEP;
-
                 // do not compute for border
-                if (x < grid.WIDTH)
-                    newBulk.getCell(x, y).ux = bulk.getCell(x, y).ux + BulkFlowComputer.computeUXDerivative(x, y, bulk) * Config.TIME_STEP;
-                if (y < grid.HEIGHT)
-                    newBulk.getCell(x, y).uy = bulk.getCell(x, y).uy + BulkFlowComputer.computeUYDerivative(x, y, bulk) * Config.TIME_STEP;
+                if (x < grid.WIDTH) {
+                    float newU = bulk.getCell(x, y).ux + BulkFlowComputer.computeUXDerivative(x, y, bulk) * Config.TIME_STEP;
+                    newBulk.getCell(x, y).ux = clampU(newU);
+                }
+                if (y < grid.HEIGHT) {
+                    float newU = bulk.getCell(x, y).uy + BulkFlowComputer.computeUYDerivative(x, y, bulk) * Config.TIME_STEP;
+                    newBulk.getCell(x, y).uy = clampU(newU);
+                }
             }
         }
 
@@ -70,13 +87,13 @@ public class Main {
             for (int x = 1; x <= grid.WIDTH; x++) {
                 Cell cell = newBulk.getCell(x, y);
 
-                Pair<Float, Float> averageH = bulk.getUpwindH(x, y);
+                Pair<Float, Float> upwindH = bulk.getUpwindH(x, y);
 
                 // do not compute for border
                 if (x < grid.WIDTH)
-                    cell.qx = cell.ux * averageH.getLeft();
+                    cell.qx = cell.ux * upwindH.getLeft();
                 if (y < grid.HEIGHT)
-                    cell.qy = cell.uy * averageH.getRight();
+                    cell.qy = cell.uy * upwindH.getRight();
             }
         }
 
@@ -88,7 +105,6 @@ public class Main {
                 Cell upCell = newBulk.getCell(x, y - 1);
 
                 float divergence = (cell.qx - leftCell.qx) / Config.CELL_SIZE + (cell.qy - upCell.qy) / Config.CELL_SIZE;
-
                 divergence *= -1;
 
                 cell.h = bulk.getCell(x, y).h + divergence * Config.TIME_STEP;
@@ -96,5 +112,17 @@ public class Main {
         }
 
         return newBulk;
+    }
+
+    private static float clampU(float u) {
+        float uMax = Config.CELL_SIZE / (4 * Config.TIME_STEP);
+
+        if (u > 0) {
+            return Math.min(u, uMax);
+        }
+        if (u < 0) {
+            return -clampU(-u);
+        }
+        return 0;
     }
 }
