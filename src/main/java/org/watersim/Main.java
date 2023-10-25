@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 public class Main {
 
     public static void main(String[] args) {
-        String name = "simple_1d";
+        String name = "simple_2d";
         int numFrames = 300;
 
         // read grid h values

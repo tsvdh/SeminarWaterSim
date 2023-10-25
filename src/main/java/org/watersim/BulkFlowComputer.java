@@ -2,6 +2,8 @@ package org.watersim;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.function.Function;
+
 public class BulkFlowComputer {
 
     public static float computeHDerivative(int x, int y, Grid bulk) {
@@ -24,6 +26,7 @@ public class BulkFlowComputer {
         Cell rightCell = bulk.getCell(x + 1, y);
         Cell upCell = bulk.getCell(x, y - 1);
         Cell downCell = bulk.getCell(x, y + 1);
+        Cell topRightCell = bulk.getCell(x + 1, y - 1);
 
         Pair<Float, Float> upwindH = bulk.getUpwindH(x, y);
 
@@ -32,24 +35,35 @@ public class BulkFlowComputer {
             float goingRight = (bulk.getAverageQ(x, y).getLeft() / upwindH.getLeft()) * ((curCell.ux - leftCell.ux) / Config.CELL_SIZE);
             float goingLeft = (bulk.getAverageQ(x + 1, y).getLeft() / upwindH.getLeft()) * ((rightCell.ux - curCell.ux) / Config.CELL_SIZE);
 
-            if (curCell.ux > 0) {
-                firstPart = goingRight;
+            if (curCell.ux >= 0) {
+                firstPart += goingRight;
             }
-            else if (curCell.ux < 0) {
-                firstPart = goingLeft;
-            }
-            else {
-                firstPart = goingRight + goingLeft;
+            if (curCell.ux <= 0) {
+                firstPart += goingLeft;
             }
         }
 
         float secondPart = 0;
         if (upwindH.getLeft() != 0) {
-            if (upCell.uy > 0) {
-                secondPart += (upCell.qy / upwindH.getLeft()) * ((curCell.ux - upCell.ux) / Config.CELL_SIZE);
+
+            Function<Float, Float> secondPartAbove = (downFlow) -> (downFlow / upwindH.getLeft()) * ((curCell.ux - upCell.ux) / Config.CELL_SIZE);
+
+            if (curCell.ux >= 0 && upCell.qy > 0) {
+                secondPart += secondPartAbove.apply(upCell.qy);
             }
-            if (curCell.uy < 0) {
-                secondPart += (-curCell.qy / upwindH.getLeft()) * ((curCell.ux - downCell.ux) / Config.CELL_SIZE);
+
+            if (curCell.ux <= 0 && topRightCell.qy > 0) {
+                secondPart += secondPartAbove.apply(topRightCell.qy);
+            }
+
+            Function<Float, Float> secondPartBelow = (upFlow) -> ((upFlow / upwindH.getLeft()) * ((downCell.ux - curCell.ux) / Config.CELL_SIZE));
+
+            if (curCell.ux >= 0 && curCell.qy < 0) {
+                secondPart += secondPartBelow.apply(curCell.qy);
+            }
+
+            if (curCell.ux <= 0 && rightCell.qy < 0) {
+                secondPart += secondPartBelow.apply(rightCell.qy);
             }
         }
 
@@ -65,32 +79,42 @@ public class BulkFlowComputer {
         Cell rightCell = bulk.getCell(x + 1, y);
         Cell upCell = bulk.getCell(x, y - 1);
         Cell downCell = bulk.getCell(x, y + 1);
+        Cell downLeftCell = bulk.getCell(x - 1, y + 1);
 
         Pair<Float, Float> upwindH = bulk.getUpwindH(x, y);
-
-        float firstPart = 0;
-        if (upwindH.getRight() != 0) {
-            if (leftCell.ux > 0) {
-                firstPart += (leftCell.qx / upwindH.getRight()) * ((curCell.uy - leftCell.uy) / Config.CELL_SIZE);
-            }
-            if (curCell.ux < 0) {
-                firstPart += (-curCell.qx / upwindH.getRight()) * ((curCell.uy - rightCell.uy) / Config.CELL_SIZE);
-            }
-        }
 
         float secondPart = 0;
         if (upwindH.getRight() != 0) {
             float goingDown = (bulk.getAverageQ(x, y).getRight() / upwindH.getRight()) * ((curCell.uy - upCell.uy) / Config.CELL_SIZE);
             float goingUp = (bulk.getAverageQ(x, y + 1).getRight() / upwindH.getRight()) * ((downCell.uy - curCell.uy) / Config.CELL_SIZE);
 
-            if (curCell.uy > 0) {
-               secondPart = goingDown;
+            if (curCell.uy >= 0) {
+               secondPart += goingDown;
             }
-            else if (curCell.uy < 0) {
-               secondPart = goingUp;
+            if (curCell.uy <= 0) {
+               secondPart += goingUp;
             }
-            else {
-                secondPart = goingDown + goingUp;
+        }
+
+        float firstPart = 0;
+        if (upwindH.getRight() != 0) {
+
+            Function<Float, Float> firstLeftPart = (rightFlow) -> ((rightFlow / upwindH.getRight()) * ((curCell.uy - leftCell.uy) / Config.CELL_SIZE));
+
+            if (curCell.uy >= 0 && leftCell.qx > 0) {
+                firstPart += firstLeftPart.apply(leftCell.qx);
+            }
+            if (curCell.uy <= 0 && downLeftCell.qx > 0) {
+                firstPart += firstLeftPart.apply(downLeftCell.qx);
+            }
+
+            Function<Float, Float> firstRightPart = (leftFlow) -> ((leftFlow / upwindH.getRight()) * ((rightCell.uy - curCell.uy ) / Config.CELL_SIZE));
+
+            if (curCell.uy >= 0 && curCell.qx < 0) {
+                firstPart += firstRightPart.apply(curCell.qx);
+            }
+            if (curCell.uy <= 0 && downCell.qx < 0) {
+                firstPart += firstRightPart.apply(downCell.qx);
             }
         }
 
