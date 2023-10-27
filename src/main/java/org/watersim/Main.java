@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 public class Main {
 
     public static void main(String[] args) {
-        String name = "simple_1d";
-        int numFrames = 20;
+        String name = "simple_2d";
+        int numFrames = 400;
 
         String outPath = "grids/output/%s/%s.txt";
 

@@ -79,7 +79,7 @@ public class Grid {
                 if (y > 0 && x > 0 && y <= HEIGHT && x <= WIDTH) {
                     cells[y][x].h = Float.parseFloat(heightsList.get(y - 1)[x - 1]);
 
-                    if (listIndex >= 1) {
+                    if (!velocitiesXList.isEmpty()) {
                         cells[y][x].qx = Float.parseFloat(velocitiesXList.get(y - 1)[x - 1]);
                         cells[y][x].qy = Float.parseFloat(velocitiesYList.get(y - 1)[x - 1]);
                     }
@@ -178,29 +178,6 @@ public class Grid {
         }
 
         return new ImmutablePair<>(upwindXH, upwindYH);
-
-        // Float thisH = (xInActive(x) && yInActive(y)) ? getCell(x, y).h : null;
-        // Float xH = (xInActive(x + 1) && yInActive(y)) ? getCell(x + 1, y).h : null;
-        // Float yH = (xInActive(x) && yInActive(y + 1)) ? getCell(x, y + 1).h : null;
-        // //
-        // Float averageXH, averageYH;
-        //
-        // if (thisH != null && xH != null) {
-        //     averageXH = (thisH + xH) / 2;
-        // } else if (xH == null) {
-        //     averageXH = thisH;
-        // } else {
-        //     averageXH = xH;
-        // }
-        // if (thisH != null && yH != null) {
-        //     averageYH = (thisH + yH) / 2;
-        // } else if (yH == null) {
-        //     averageYH = thisH;
-        // } else {
-        //     averageYH = yH;
-        // }
-        //
-        // return new ImmutablePair<>(averageXH, averageYH);
     }
 
     public Pair<Float, Float> getAverageQ(int x, int y) {

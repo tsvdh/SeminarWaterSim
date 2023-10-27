@@ -14,7 +14,6 @@ public class Simulator {
     private final Grid wallGrid;
 
     public Simulator(Path path) {
-        // read grid values
         StringBuilder water = new StringBuilder();
         StringBuilder walls = new StringBuilder();
 
@@ -25,10 +24,13 @@ public class Simulator {
                 if (readingWater) {
                     if (line.equals("-"))
                         readingWater = false;
-                    else
+                    else {
                         water.append(line);
+                        water.append('\n');
+                    }
                 } else {
                     walls.append(line);
+                    walls.append('\n');
                 }
             }
         }
@@ -40,6 +42,13 @@ public class Simulator {
         prevGrid = grid.copy();
 
         wallGrid = new Grid(walls.toString());
+        for (int y = 0; y <= wallGrid.HEIGHT + 1; y++) {
+            for (int x = 0; x <= wallGrid.WIDTH + 1; x++) {
+                if (x == 0 || y == 0 || x == wallGrid.HEIGHT + 1 || y == wallGrid.WIDTH + 1) {
+                    wallGrid.getCell(x, y).h = 1f;
+                }
+            }
+        }
     }
 
     public Grid getGrid() {
