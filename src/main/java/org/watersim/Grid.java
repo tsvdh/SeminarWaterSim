@@ -11,12 +11,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Grid {
 
-    private final Cell[][] cells;
+    private Cell[][] cells;
 
-    public final int WIDTH, HEIGHT;
+    public int WIDTH, HEIGHT;
 
     public Grid(int width, int height) {
         this.WIDTH = width;
@@ -30,17 +31,23 @@ public class Grid {
         }
     }
 
-    public Grid(String path) {
-        List<String[]> charsList;
+    public Grid(String input) {
+        init(input.lines());
+    }
 
-        try (var reader = Files.newBufferedReader(Paths.get(path))) {
-            charsList = reader.lines()
-                    .map(x -> x.split(" "))
-                    .collect(Collectors.toList());
+    public Grid(Path path) {
+        try (var reader = Files.newBufferedReader(path)) {
+            init(reader.lines());
         }
         catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void init(Stream<String> input) {
+        List<String[]> charsList = input
+                .map(x -> x.split(" "))
+                .toList();
 
         List<String[]> heightsList = new ArrayList<>();
         List<String[]> velocitiesXList = new ArrayList<>();
@@ -70,9 +77,9 @@ public class Grid {
                 cells[y][x] = new Cell();
 
                 if (y > 0 && x > 0 && y <= HEIGHT && x <= WIDTH) {
-                    cells[y][x].h = Float.parseFloat(charsList.get(y - 1)[x - 1]);
+                    cells[y][x].h = Float.parseFloat(heightsList.get(y - 1)[x - 1]);
 
-                    if (listIndex > 0) {
+                    if (listIndex >= 1) {
                         cells[y][x].qx = Float.parseFloat(velocitiesXList.get(y - 1)[x - 1]);
                         cells[y][x].qy = Float.parseFloat(velocitiesYList.get(y - 1)[x - 1]);
                     }
@@ -143,61 +150,31 @@ public class Grid {
         cells[y][x] = newCell;
     }
 
-    private boolean xActive(int x) {
-        return x > 0 && x <= WIDTH;
-    }
-
-    private boolean yActive(int y) {
-        return y > 0 && y <= HEIGHT;
-    }
-
-    private boolean xInBounds(int x) {
-        return x >= 0 && x <= WIDTH + 1;
-    }
-
-    private boolean yInBounds(int y) {
-        return y >= 0 && y <= HEIGHT + 1;
-    }
-
     public Pair<Float, Float> getUpwindH(int x, int y) {
-        Float thisH = (xActive(x) && yActive(y)) ? getCell(x, y).h : null;
-        Float xH = (xActive(x + 1) && yActive(y)) ? getCell(x + 1, y).h : null;
-        Float yH = (xActive(x) && yActive(y + 1)) ? getCell(x, y + 1).h : null;
+        Cell curCell = getCell(x, y);
 
-        Float upwindXH, upwindYH;
+        float thisH = curCell.h;
+        float xH = getCell(x + 1, y).h;
+        float yH = getCell(x, y + 1).h;
 
-        if (thisH == null && xH == null) {
-            upwindXH = null;
-        } else if (thisH == null) {
-            upwindXH = xH;
-        } else if (xH == null) {
+        float upwindXH, upwindYH;
+
+        float ux = curCell.ux;
+        if (ux > 0) {
             upwindXH = thisH;
+        } else if (ux < 0) {
+            upwindXH = xH;
         } else {
-            float u = getCell(x, y).ux;
-            if (u > 0) {
-                upwindXH = thisH;
-            } else if (u < 0) {
-                upwindXH = xH;
-            } else {
-                upwindXH = Math.max(thisH, xH);
-            }
+            upwindXH = Math.max(thisH, xH);
         }
 
-        if (thisH == null && yH == null) {
-            upwindYH = null;
-        } else if (thisH == null) {
-            upwindYH = yH;
-        } else if (yH == null) {
+        float uy = curCell.uy;
+        if (uy > 0) {
             upwindYH = thisH;
+        } else if (uy < 0) {
+            upwindYH = yH;
         } else {
-            float u = getCell(x, y).uy;
-            if (u > 0) {
-                upwindYH = thisH;
-            } else if (u < 0) {
-                upwindYH = yH;
-            } else {
-                upwindYH = Math.max(thisH, yH);
-            }
+            upwindYH = Math.max(thisH, yH);
         }
 
         return new ImmutablePair<>(upwindXH, upwindYH);
