@@ -2,9 +2,9 @@ package org.watersim;
 
 public class Cell {
 
-    public Float h;
-    public Float qx, qy;
-    public Float ux, uy;
+    public float h;
+    public float qx, qy;
+    public float ux, uy;
 
     public Cell() {
         h = 0f;

@@ -44,6 +44,14 @@ public class Grid {
         }
     }
 
+    public Cell getCell(int x, int y) {
+        return cells[y][x];
+    }
+
+    public void setCell(int x, int y, Cell newCell) {
+        cells[y][x] = newCell;
+    }
+
     public void init(Stream<String> input) {
         List<String[]> charsList = input
                 .map(x -> x.split(" "))
@@ -142,14 +150,6 @@ public class Grid {
         return newGrid;
     }
 
-    public Cell getCell(int x, int y) {
-        return cells[y][x];
-    }
-
-    public void setCell(int x, int y, Cell newCell) {
-        cells[y][x] = newCell;
-    }
-
     public Pair<Float, Float> getUpwindH(int x, int y) {
         Cell curCell = getCell(x, y);
 
@@ -201,5 +201,33 @@ public class Grid {
         }
 
         return total;
+    }
+
+    public static Pair<Grid, WallGrid> parseInput(Path path) {
+        StringBuilder water = new StringBuilder();
+        StringBuilder walls = new StringBuilder();
+
+        try (var reader = Files.newBufferedReader(path)) {
+            boolean readingWater = true;
+
+            for (String line : reader.lines().toList()) {
+                if (readingWater) {
+                    if (line.equals("-"))
+                        readingWater = false;
+                    else {
+                        water.append(line);
+                        water.append('\n');
+                    }
+                } else {
+                    walls.append(line);
+                    walls.append('\n');
+                }
+            }
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new ImmutablePair<>(new Grid(water.toString()), new WallGrid(walls.toString()));
     }
 }

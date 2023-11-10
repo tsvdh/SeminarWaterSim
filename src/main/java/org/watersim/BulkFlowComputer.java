@@ -19,7 +19,6 @@ public class BulkFlowComputer {
         return -1 * (xPart + yPart);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     public static float computeUXDerivative(int x, int y, Grid bulk) {
         Cell curCell = bulk.getCell(x, y);
         Cell leftCell = bulk.getCell(x - 1, y);
@@ -72,7 +71,6 @@ public class BulkFlowComputer {
         return -1 * (firstPart + secondPart + thirdPart);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     public static float computeUYDerivative(int x, int y, Grid bulk) {
         Cell curCell = bulk.getCell(x, y);
         Cell leftCell = bulk.getCell(x - 1, y);

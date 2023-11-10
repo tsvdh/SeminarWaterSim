@@ -11,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) {
         String name = "simple_2d";
-        int numFrames = 400;
+        int numFrames = 1;
 
         String outPath = "grids/output/%s/%s.txt";
 
