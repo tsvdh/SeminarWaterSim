@@ -36,29 +36,37 @@ public class AiryWaveComputer {
         fft.realForwardFull(surfaceQX);
         fft.realForwardFull(surfaceQY);
 
-        float halfWay = grid.WIDTH / 2f;
+        float half = grid.WIDTH / 2f;
 
         for (int x = 0; x < grid.WIDTH; x++) {
             int realX = x * 2;
             int imX = realX + 1;
 
             for (int y = 0; y < grid.HEIGHT; y++) {
-                float kX = halfWay - Math.abs(halfWay - x); // square grid, halfway works for both dimensions
-                float kY = halfWay - Math.abs(halfWay - y);
+                float kX = half - Math.abs(half - x); // square grid, halfway works for both dimensions
+                float kY = half - Math.abs(half - y);
+
+                // float kX = x < half ? x
+                //         : x > half ? x - grid.WIDTH
+                //         : 0;
+                // float kY = y < half ? y
+                //         : y > half ? y - grid.HEIGHT
+                //         : 0;
+
                 float k = (float) (2 * Math.PI * Math.sqrt(Math.pow(kX, 2) + Math.pow(kY, 2)) / grid.WIDTH);
 
-                float kXS = (float) (-2 * Math.PI * Math.abs(kX) / grid.WIDTH);
-                float kYS = (float) (-2 * Math.PI * Math.abs(kY) / grid.HEIGHT);
+                kX = (float) (2 * Math.PI * Math.abs(kX) / grid.WIDTH);
+                kY = (float) (2 * Math.PI * Math.abs(kY) / grid.HEIGHT);
 
                 // compute derivative
-                float realDX = kXS * surfaceH[y][imX];
-                float imDX = -kXS * surfaceH[y][realX];
-                float realDY = kYS * surfaceH[y][imX];
-                float imDY = -kYS * surfaceH[y][realX];
+                float realDX = -kX * surfaceH[y][imX];
+                float imDX = kX * surfaceH[y][realX];
+                float realDY = -kY * surfaceH[y][imX];
+                float imDY = kY * surfaceH[y][realX];
 
                 // shift h to q position
-                float shiftTermX = -1 * kXS * Config.CELL_SIZE / 2;
-                float shiftTermY = -1 * kYS * Config.CELL_SIZE / 2;
+                float shiftTermX = kX * Config.CELL_SIZE / 2;
+                float shiftTermY = kY * Config.CELL_SIZE / 2;
 
                 float shiftRealX = (float) Math.cos(shiftTermX);
                 float shiftImX = (float) Math.sin(shiftTermX);
@@ -90,6 +98,7 @@ public class AiryWaveComputer {
 
                     float qPart = (float) Math.cos(omega * Config.TIME_STEP);
                     float hPart = k == 0 ? 0 : (float) (Math.sin(omega * Config.TIME_STEP) * omega / Math.pow(k, 2));
+                    // float hPart = k == 0 ? 0 : (float) (Math.sin(omega * Config.TIME_STEP) * Config.GRAVITY / omega);
 
                     newSurfaceQX[i][y][realX] = qPart * surfaceQX[y][realX] - hPart * realShiftedDX;
                     newSurfaceQX[i][y][imX] = qPart * surfaceQX[y][imX] - hPart * imShiftedDX;
@@ -112,6 +121,8 @@ public class AiryWaveComputer {
         // for (int y = 0; y < grid.HEIGHT; y++) {
         //     System.out.println(Arrays.toString(newSurfaceQY[0][y]));
         // }
+        //
+        // System.exit(0);
 
         var newSurface = new Grid(grid.WIDTH, grid.HEIGHT);
 

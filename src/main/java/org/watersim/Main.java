@@ -11,11 +11,11 @@ import java.util.stream.Stream;
 public class Main {
 
     public static void main(String[] args) {
-        String name = "simple_2d";
-        int numFrames = 120;
+        String name = "large_2d";
+
+        Config.readConfig(Paths.get("grids/input/%s/config.txt".formatted(name)));
 
         String outPath = "grids/output/%s/%s.txt";
-
         Path parentPath = Paths.get(outPath.formatted(name, 0)).getParent();
 
         try {
@@ -34,11 +34,11 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        Config.readConfig(Paths.get("grids/input/%s/config.txt".formatted(name)));
         var simulator = new Simulator(Paths.get("grids/input/%s/data.txt".formatted(name)));
 
         simulator.getGrid().dump(outPath.formatted(name, 0));
 
+        int numFrames = Math.round(Config.LENGTH / Config.TIME_STEP);
         for (; Config.FRAME <= numFrames; Config.FRAME++) {
             Grid newGrid = simulator.makeNewGrid();
 
