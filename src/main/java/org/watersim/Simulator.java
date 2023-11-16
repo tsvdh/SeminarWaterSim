@@ -27,12 +27,12 @@ public class Simulator {
     }
 
     public Grid makeNewGrid() {
-        Pair<Grid, Grid> grids = Decomposer.decompose(grid, wallGrid);
-
-        System.out.println(grids.getLeft());
-        System.out.println(grids.getRight());
-
-        return null;
+        // Pair<Grid, Grid> grids = Decomposer.decompose(grid, wallGrid);
+        //
+        // System.out.println(grids.getLeft());
+        // System.out.println(grids.getRight());
+        //
+        // return null;
 
         // Grid prevBulk = Decomposer.decomposeBulkOnly(prevGrid).getLeft();
         // Grid bulk = Decomposer.decomposeBulkOnly(grid).getLeft();
@@ -104,10 +104,30 @@ public class Simulator {
         //
         // return newBulk;
 
-        // Grid prevSurface = Decomposer.decomposeSurfaceOnly(prevGrid).getRight();
-        // Grid surface = Decomposer.decomposeSurfaceOnly(grid).getRight();
-        //
-        // Grid newSurface = AiryWaveComputer.computeSurfaceQ(grid, surface, prevSurface);
+        Grid prevSurface = Decomposer.decomposeSurfaceOnly(prevGrid).getRight();
+        Grid surface = Decomposer.decomposeSurfaceOnly(grid).getRight();
+
+        Grid newSurface = AiryWaveComputer.computeSurfaceQ(grid, surface, prevSurface);
+
+        // update heights with flow divergence
+        for (int y = 1; y <= grid.HEIGHT; y++) {
+            for (int x = 1; x <= grid.WIDTH; x++) {
+                // TODO: perhaps only for non walls
+                Cell cell = newSurface.getCell(x, y);
+                Cell leftCell = newSurface.getCell(x - 1, y);
+                Cell upCell = newSurface.getCell(x, y - 1);
+
+                float divergence = (cell.qx - leftCell.qx) / Config.CELL_SIZE + (cell.qy - upCell.qy) / Config.CELL_SIZE;
+                divergence *= -1;
+
+                cell.h = surface.getCell(x, y).h + divergence * Config.TIME_STEP;
+            }
+        }
+
+        prevGrid = surface;
+        grid = newSurface;
+
+        return newSurface;
     }
 
     private static float clampU(float u) {
