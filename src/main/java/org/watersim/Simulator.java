@@ -1,11 +1,8 @@
 package org.watersim;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jtransforms.fft.FloatFFT_1D;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 
 public class Simulator {
 
@@ -21,6 +18,9 @@ public class Simulator {
         prevGrid = grid.copy();
 
         wallGrid = input.getRight();
+
+        if (grid.WIDTH != grid.HEIGHT || wallGrid.WIDTH != grid.HEIGHT)
+            throw new RuntimeException();
     }
 
     public Grid getGrid() {
@@ -129,120 +129,6 @@ public class Simulator {
         grid = newSurface;
 
         return newSurface;
-
-        // int width = 8;
-        // var fft = new FloatFFT_1D(width);
-        // float[] data = new float[width * 2];
-        //
-        // periodic data
-        // for (int i = 0; i < width; i++) {
-        //     data[i] = (float) Math.sin(i * Math.PI / 4);
-        //     if (Math.abs(data[i]) < 0.0001)
-        //         data[i] = 0;
-        // }
-        //
-        // System.out.println(Arrays.toString(data));
-        //
-        // fft.realForwardFull(data);
-        //
-        // // float[] unShifted = new float[width * 2];
-        //
-        // for (int k = 0; k < width; k++) {
-        //     int realI = k * 2;
-        //     int imI = realI + 1;
-        //
-        //     float multiplier = (float) (2 * Math.PI / width);
-        //
-        //     float half = width / 2f;
-        //     if (k < half)
-        //         multiplier *= k;
-        //     else if (k > half)
-        //         multiplier *= k - width;
-        //     else
-        //         multiplier = 0;
-        //
-        //     // multiplier *= half - Math.abs(half - k);
-        //
-        //     float realPart = data[realI];
-        //     float imPart = data[imI];
-        //
-        //     data[realI] = -imPart * multiplier;
-        //     data[imI] = realPart * multiplier;
-        //
-        //     // unShifted[realI] = data[realI];
-        //     // unShifted[imI] = data[imI];
-        //     //
-        //     // float shiftTerm = -multiplier / 2f;
-        //     // float shiftReal = (float) Math.cos(shiftTerm);
-        //     // float shiftIm = (float) Math.sin(shiftTerm);
-        //     //
-        //     // realPart = data[realI];
-        //     // imPart = data[imI];
-        //     //
-        //     // // (a + ib) * (c * id) = ac + iad + ibc - bd
-        //     // data[realI] = realPart * shiftReal - imPart * shiftIm;
-        //     // data[imI] = realPart * shiftIm + imPart * shiftReal;
-        // }
-        //
-        // fft.complexInverse(data, true);
-        // // fft.complexInverse(unShifted, true);
-        //
-        // // System.out.println(Arrays.toString(unShifted));
-        // System.out.println(Arrays.toString(data));
-
-        // data[2] = 1;
-        // data[3] = 1;
-        //
-        // System.out.println(Arrays.toString(data));
-        //
-        // fft.realForwardFull(data);
-        //
-        // // float[] unShifted = new float[width * 2];
-        //
-        // for (int k = 0; k < width; k++) {
-        //     int realI = k * 2;
-        //     int imI = realI + 1;
-        //
-        //     float multiplier = (float) (2 * Math.PI / width);
-        //
-        //     float half = width / 2f;
-        //     if (k < half)
-        //         multiplier *= k;
-        //     else if (k > half)
-        //         multiplier *= k - width;
-        //     else
-        //         multiplier = 0;
-        //
-        //     // multiplier *= half - Math.abs(half - k);
-        //
-        //     float realPart = data[realI];
-        //     float imPart = data[imI];
-        //
-        //     data[realI] = -imPart * multiplier;
-        //     data[imI] = realPart * multiplier;
-        //
-        //     // unShifted[realI] = data[realI];
-        //     // unShifted[imI] = data[imI];
-        //     //
-        //     // float shiftTerm = -multiplier / 2f;
-        //     // float shiftReal = (float) Math.cos(shiftTerm);
-        //     // float shiftIm = (float) Math.sin(shiftTerm);
-        //     //
-        //     // realPart = data[realI];
-        //     // imPart = data[imI];
-        //     //
-        //     // // (a + ib) * (c * id) = ac + iad + ibc - bd
-        //     // data[realI] = realPart * shiftReal - imPart * shiftIm;
-        //     // data[imI] = realPart * shiftIm + imPart * shiftReal;
-        // }
-        //
-        // fft.complexInverse(data, true);
-        // // fft.complexInverse(unShifted, true);
-        //
-        // // System.out.println(Arrays.toString(unShifted));
-        // System.out.println(Arrays.toString(data));
-        //
-        // return null;
     }
 
     private static float clampU(float u) {

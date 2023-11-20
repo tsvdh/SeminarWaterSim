@@ -1,5 +1,6 @@
 package org.watersim;
 
+import me.tongfei.progressbar.ProgressBar;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -35,14 +36,22 @@ public class Main {
         }
 
         var simulator = new Simulator(Paths.get("grids/input/%s/data.txt".formatted(name)));
-
         simulator.getGrid().dump(outPath.formatted(name, 0));
 
         int numFrames = Math.round(Config.LENGTH / Config.TIME_STEP);
-        for (; Config.FRAME <= numFrames; Config.FRAME++) {
-            Grid newGrid = simulator.makeNewGrid();
+        long simStart = System.currentTimeMillis();
 
-            newGrid.dump(outPath.formatted(name, Config.FRAME));
+        try (var bar = new ProgressBar("Sim", numFrames)) {
+            for (; Config.FRAME <= numFrames; Config.FRAME++) {
+                Grid newGrid = simulator.makeNewGrid();
+                newGrid.dump(outPath.formatted(name, Config.FRAME));
+                bar.step();
+                bar.refresh();
+            }
         }
+
+        long simTime = System.currentTimeMillis() - simStart;
+
+        System.out.printf("Sim took: %ss (%sms per frame)\n", simTime / 1000, simTime / numFrames);
     }
 }

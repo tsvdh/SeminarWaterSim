@@ -6,9 +6,6 @@ import java.util.Arrays;
 public class AiryWaveComputer {
 
     public static Grid computeSurfaceQ(Grid grid, Grid surface, Grid prevSurface) {
-        if (grid.WIDTH != grid.HEIGHT)
-            throw new RuntimeException();
-
         // set up arrays
         float[][] surfaceH = new float[grid.HEIGHT][grid.WIDTH * 2];
         float[][] surfaceQX = new float[grid.HEIGHT][grid.WIDTH * 2];
@@ -43,20 +40,17 @@ public class AiryWaveComputer {
             int imX = realX + 1;
 
             for (int y = 0; y < grid.HEIGHT; y++) {
-                float kX = half - Math.abs(half - x); // square grid, halfway works for both dimensions
-                float kY = half - Math.abs(half - y);
+                float kX = x < half ? x
+                        : x > half ? x - grid.WIDTH
+                        : 0;
+                float kY = y < half ? y
+                        : y > half ? y - grid.HEIGHT
+                        : 0;
 
-                // float kX = x < half ? x
-                //         : x > half ? x - grid.WIDTH
-                //         : 0;
-                // float kY = y < half ? y
-                //         : y > half ? y - grid.HEIGHT
-                //         : 0;
+                kX = (float) (2 * Math.PI * kX / grid.WIDTH);
+                kY = (float) (2 * Math.PI * kY / grid.HEIGHT);
 
-                float k = (float) (2 * Math.PI * Math.sqrt(Math.pow(kX, 2) + Math.pow(kY, 2)) / grid.WIDTH);
-
-                kX = (float) (2 * Math.PI * Math.abs(kX) / grid.WIDTH);
-                kY = (float) (2 * Math.PI * Math.abs(kY) / grid.HEIGHT);
+                float k = (float) Math.sqrt(Math.pow(kX, 2) + Math.pow(kY, 2));
 
                 // compute derivative
                 float realDX = -kX * surfaceH[y][imX];
@@ -80,25 +74,10 @@ public class AiryWaveComputer {
                 float imShiftedDY = realDY * shiftImY + imDY * shiftRealY;
 
                 for (int i = 0; i < 4; i++) {
-                    // float omegaX = (float) Math.sqrt(Config.GRAVITY * kX * Math.tanh(kX * heights[i]));
-                    // float omegaY = (float) Math.sqrt(Config.GRAVITY * kY * Math.tanh(kY * heights[i]));
-                    //
-                    // // compute new q
-                    // float qPartX = (float) Math.cos(omegaX * Config.TIME_STEP);
-                    // float qPartY = (float) Math.cos(omegaY * Config.TIME_STEP);
-                    // float hPartX = omegaX == 0 ? 0 : (float) (Math.sin(omegaX * Config.TIME_STEP) * omegaX / Math.pow(kX, 2));
-                    // float hPartY = omegaY == 0 ? 0 : (float) (Math.sin(omegaY * Config.TIME_STEP) * omegaY / Math.pow(kY, 2));
-                    //
-                    // newSurfaceQX[i][y][realX] = qPartX * surfaceQX[y][realX] - hPartX * realShiftedDX;
-                    // newSurfaceQX[i][y][imX] = qPartX * surfaceQX[y][imX] - hPartX * imShiftedDX;
-                    // newSurfaceQY[i][y][realX] = qPartY * surfaceQY[y][realX] - hPartY * realShiftedDY;
-                    // newSurfaceQY[i][y][imX] = qPartY * surfaceQY[y][imX] - hPartY * imShiftedDY;
-
                     float omega = (float) Math.sqrt(Config.GRAVITY * k * Math.tanh(k * heights[i]));
 
                     float qPart = (float) Math.cos(omega * Config.TIME_STEP);
                     float hPart = k == 0 ? 0 : (float) (Math.sin(omega * Config.TIME_STEP) * omega / Math.pow(k, 2));
-                    // float hPart = k == 0 ? 0 : (float) (Math.sin(omega * Config.TIME_STEP) * Config.GRAVITY / omega);
 
                     newSurfaceQX[i][y][realX] = qPart * surfaceQX[y][realX] - hPart * realShiftedDX;
                     newSurfaceQX[i][y][imX] = qPart * surfaceQX[y][imX] - hPart * imShiftedDX;
@@ -113,16 +92,6 @@ public class AiryWaveComputer {
             fft.complexInverse(newSurfaceQX[i], true);
             fft.complexInverse(newSurfaceQY[i], true);
         }
-
-        // for (int y = 0; y < grid.HEIGHT; y++) {
-        //     System.out.println(Arrays.toString(newSurfaceQX[0][y]));
-        // }
-        // System.out.println();
-        // for (int y = 0; y < grid.HEIGHT; y++) {
-        //     System.out.println(Arrays.toString(newSurfaceQY[0][y]));
-        // }
-        //
-        // System.exit(0);
 
         var newSurface = new Grid(grid.WIDTH, grid.HEIGHT);
 
@@ -166,26 +135,3 @@ public class AiryWaveComputer {
         return newSurface;
     }
 }
-
-// TODO: delete if not needed
-// float k = (float) Math.sqrt(Math.pow(surfaceH[realX], 2) + Math.pow(surfaceH[imX], 2));
-//
-// // differentiate h
-// float derivativeMultiplier = k; // (2pi / L), L = (2pi / k), => k
-// float hReal = surfaceH[realX];
-// float hIm = surfaceH[imX];
-//
-// if (x < halfWay) {
-//     derivativeMultiplier *= x;
-//     derivativeH[realX] = -hIm * derivativeMultiplier;
-//     derivativeH[imX] = hReal * derivativeMultiplier;
-// }
-// else if (x > halfWay) {
-//     derivativeMultiplier *= (x - grid.WIDTH);
-//     derivativeH[realX] = -hIm * derivativeMultiplier;
-//     derivativeH[imX] = hReal * derivativeMultiplier;
-// }
-// else {
-//     derivativeH[realX] = 0;
-//     derivativeH[imX] = 0;
-// }

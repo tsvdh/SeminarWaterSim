@@ -22,10 +22,23 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.wendykierp</groupId>
             <artifactId>JTransforms</artifactId>
             <version>3.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>me.tongfei</groupId>
+            <artifactId>progressbar</artifactId>
+            <version>0.10.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>
