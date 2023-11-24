@@ -1,5 +1,6 @@
 package org.watersim;
 
+import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.Path;
@@ -7,6 +8,7 @@ import java.nio.file.Path;
 public class Simulator {
 
     private Grid prevGrid;
+    @Getter
     private Grid grid;
 
     private final WallGrid wallGrid;
@@ -21,10 +23,6 @@ public class Simulator {
 
         if (grid.WIDTH != grid.HEIGHT || wallGrid.WIDTH != grid.HEIGHT)
             throw new RuntimeException();
-    }
-
-    public Grid getGrid() {
-        return grid;
     }
 
     public Grid makeNewGrid() {

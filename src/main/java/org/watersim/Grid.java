@@ -125,7 +125,6 @@ public class Grid {
 
         try {
             Files.deleteIfExists(filePath);
-            Files.createFile(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
