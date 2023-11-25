@@ -1,7 +1,6 @@
 package org.watersim;
 
 import me.tongfei.progressbar.ProgressBar;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,7 +12,7 @@ import java.util.stream.Stream;
 public class Main {
 
     public static void main(String[] args) {
-        String name = "simple_2d";
+        String name = "large";
 
         Config.readConfig(Paths.get("grids/input/%s/config.json".formatted(name)));
 
@@ -74,6 +73,10 @@ public class Main {
                     bar.step();
                     bar.refresh();
                 }
+            }
+            if (!Config.SEPARATE_FILES) {
+                assert writer != null;
+                writer.close();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
