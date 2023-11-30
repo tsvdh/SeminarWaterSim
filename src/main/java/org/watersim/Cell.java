@@ -5,14 +5,8 @@ public class Cell {
     public float h;
     public float qx, qy;
     public float ux, uy;
-
-    public Cell() {
-        h = 0f;
-        qx = 0f;
-        qy = 0f;
-        ux = 0f;
-        uy = 0f;
-    }
+    public float divQ;
+    public float divU;
 
     public Cell copy() {
         var copy = new Cell();
@@ -22,6 +16,8 @@ public class Cell {
         copy.qy = qy;
         copy.ux = ux;
         copy.uy = uy;
+        copy.divQ = divQ;
+        copy.divU = divU;
 
         return copy;
     }

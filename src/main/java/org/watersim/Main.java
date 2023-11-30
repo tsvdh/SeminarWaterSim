@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 public class Main {
 
     public static void main(String[] args) {
-        String name = "large";
+        String name = "simple";
 
         Config.readConfig(Paths.get("grids/input/%s/config.json".formatted(name)));
 

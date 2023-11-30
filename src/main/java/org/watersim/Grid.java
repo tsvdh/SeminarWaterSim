@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.watersim.Config.HEIGHT;
+import static org.watersim.Config.WIDTH;
+
 public class Grid {
 
     private Cell[][] cells;
@@ -158,19 +161,19 @@ public class Grid {
 
         float upwindXH, upwindYH;
 
-        float ux = curCell.ux;
-        if (ux > 0) {
+        float signX = curCell.ux != 0 ? curCell.ux: curCell.qx;
+        if (signX > 0) {
             upwindXH = thisH;
-        } else if (ux < 0) {
+        } else if (signX < 0) {
             upwindXH = xH;
         } else {
             upwindXH = Math.max(thisH, xH);
         }
 
-        float uy = curCell.uy;
-        if (uy > 0) {
+        float signY = curCell.uy != 0 ? curCell.uy : curCell.qy;
+        if (signY > 0) {
             upwindYH = thisH;
-        } else if (uy < 0) {
+        } else if (signY < 0) {
             upwindYH = yH;
         } else {
             upwindYH = Math.max(thisH, yH);
@@ -228,5 +231,73 @@ public class Grid {
         }
 
         return new ImmutablePair<>(new Grid(water.toString()), new WallGrid(walls.toString()));
+    }
+
+    public void computeDivergence() {
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
+                Cell cell = getCell(x, y);
+                Cell leftCell = getCell(x - 1, y);
+                Cell upCell = getCell(x, y - 1);
+
+                cell.divQ = (cell.qx - leftCell.qx) / Config.CELL_SIZE + (cell.qy - upCell.qy) / Config.CELL_SIZE;
+                cell.divU = (cell.ux - leftCell.ux) / Config.CELL_SIZE + (cell.uy - upCell.uy) / Config.CELL_SIZE;
+            }
+        }
+    }
+
+    public Pair<Grid, Grid> computeUpwindH() {
+        Grid heightsX = new Grid(WIDTH, HEIGHT);
+        Grid heightsY = new Grid(WIDTH, HEIGHT);
+
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
+                Cell cellX = heightsX.getCell(x, y);
+                Cell cellY = heightsY.getCell(x, y);
+
+                Pair<Float, Float> heights = getUpwindH(x, y);
+                cellX.h = heights.getLeft();
+                cellY.h = heights.getRight();
+            }
+        }
+
+        //noinspection SuspiciousNameCombination
+        return new ImmutablePair<>(heightsX, heightsY);
+    }
+
+    public void clampU() {
+        for (int y = 1; y < HEIGHT; y++) {
+            for (int x = 1; x < WIDTH; x++) {
+                Cell cell = getCell(x, y);
+
+                cell.ux = clampU(cell.ux);
+                cell.uy = clampU(cell.uy);
+            }
+        }
+    }
+
+    public void clampQ(Pair<Grid, Grid> upwindHeights) {
+        Grid heightsX = upwindHeights.getLeft();
+        Grid heightsY = upwindHeights.getRight();
+
+        for (int y = 1; y < HEIGHT; y++) {
+            for (int x = 1; x < WIDTH; x++) {
+                Cell cell = getCell(x, y);
+                cell.qx = clampQ(cell.qx, heightsX.getCell(x, y).h);
+                cell.qy = clampQ(cell.qy, heightsY.getCell(x, y).h);
+            }
+        }
+    }
+
+    private static float clampU(float u) {
+        float uMax = Config.CELL_SIZE / (4 * Config.TIME_STEP);
+
+        return Math.clamp(u, -uMax, uMax);
+    }
+
+    private static float clampQ(float q, float h) {
+        float qMax = h * Config.CELL_SIZE / (4 * Config.TIME_STEP);
+
+        return Math.clamp(q, -qMax, qMax);
     }
 }

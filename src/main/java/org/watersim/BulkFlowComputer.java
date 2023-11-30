@@ -6,19 +6,6 @@ import java.util.function.Function;
 
 public class BulkFlowComputer {
 
-    public static float computeHDerivative(int x, int y, Grid bulk) {
-        Cell curCell = bulk.getCell(x, y);
-        Cell leftCell = bulk.getCell(x - 1, y);
-        Cell upCell = bulk.getCell(x, y - 1);
-
-        Pair<Float, Float> upwindH = bulk.getUpwindH(x, y);
-
-        float xPart = ((upwindH.getLeft() * curCell.ux) - (bulk.getUpwindH(x - 1, y).getLeft() * leftCell.ux)) / Config.CELL_SIZE;
-        float yPart = ((upwindH.getRight() * curCell.uy) - (bulk.getUpwindH(x, y - 1).getRight() * upCell.uy)) / Config.CELL_SIZE;
-
-        return -1 * (xPart + yPart);
-    }
-
     public static float computeUXDerivative(int x, int y, Grid bulk) {
         Cell curCell = bulk.getCell(x, y);
         Cell leftCell = bulk.getCell(x - 1, y);
@@ -72,6 +59,7 @@ public class BulkFlowComputer {
     }
 
     public static float computeUYDerivative(int x, int y, Grid bulk) {
+        @SuppressWarnings("DuplicatedCode")
         Cell curCell = bulk.getCell(x, y);
         Cell leftCell = bulk.getCell(x - 1, y);
         Cell rightCell = bulk.getCell(x + 1, y);
@@ -119,5 +107,41 @@ public class BulkFlowComputer {
         float thirdPart = Config.GRAVITY * (bulk.getCell(x, y + 1).h - curCell.h) / Config.CELL_SIZE;
 
         return -1 * (firstPart + secondPart + thirdPart);
+    }
+
+    public static Grid computeNewBulkUAndQ(Grid grid, Grid bulk, WallGrid wallGrid) {
+        Grid newBulk = new Grid(grid.WIDTH, grid.HEIGHT);
+
+        // compute new bulk u values
+        for (int y = 1; y <= grid.HEIGHT; y++) {
+            for (int x = 1; x <= grid.WIDTH; x++) {
+                // do not compute for walls
+                if (wallGrid.canFlowRight(x, y)) {
+                    newBulk.getCell(x, y).ux = bulk.getCell(x, y).ux + BulkFlowComputer.computeUXDerivative(x, y, bulk) * Config.TIME_STEP;
+                }
+                if (wallGrid.canFlowDown(x, y)) {
+                    newBulk.getCell(x, y).uy = bulk.getCell(x, y).uy + BulkFlowComputer.computeUYDerivative(x, y, bulk) * Config.TIME_STEP;
+                }
+            }
+        }
+
+        newBulk.clampU();
+
+        // compute q bulk values
+        for (int y = 1; y <= grid.HEIGHT; y++) {
+            for (int x = 1; x <= grid.WIDTH; x++) {
+                Cell cell = newBulk.getCell(x, y);
+
+                Pair<Float, Float> upwindH = bulk.getUpwindH(x, y);
+
+                // do not compute for walls
+                if (wallGrid.canFlowRight(x, y))
+                    cell.qx = cell.ux * upwindH.getLeft();
+                if (wallGrid.canFlowDown(x, y))
+                    cell.qy = cell.uy * upwindH.getRight();
+            }
+        }
+
+        return newBulk;
     }
 }

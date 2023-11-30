@@ -1,5 +1,7 @@
 {
     "fps": 30,
     "seconds": 1,
-    "separateFiles": false
+    "separateFiles": false,
+    "width": 8,
+    "height": 8
 }

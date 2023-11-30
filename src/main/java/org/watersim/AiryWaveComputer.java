@@ -74,9 +74,10 @@ public class AiryWaveComputer {
                 float imShiftedDY = realDY * shiftImY + imDY * shiftRealY;
 
                 for (int i = 0; i < 4; i++) {
-                    float omega = (float) Math.sqrt(Config.GRAVITY * k * Math.tanh(k * heights[i]));
+                    float beta = (float) (Math.sqrt(2 * k / Config.CELL_SIZE) * Math.sqrt(Math.sin(k * Config.CELL_SIZE / 2)));
+                    float omega = (float) Math.sqrt(Config.GRAVITY * k * Math.tanh(k * heights[i])) / beta;
 
-                    float qPart = (float) Math.cos(omega * Config.TIME_STEP);
+                    float qPart = k == 0 ? 0 : (float) Math.cos(omega * Config.TIME_STEP);
                     float hPart = k == 0 ? 0 : (float) (Math.sin(omega * Config.TIME_STEP) * omega / Math.pow(k, 2));
 
                     newSurfaceQX[i][y][realX] = qPart * surfaceQX[y][realX] - hPart * realShiftedDX;

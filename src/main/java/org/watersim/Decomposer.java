@@ -25,6 +25,7 @@ public class Decomposer {
                     if (grid.getCell(x, y).h == 0 || wallGrid.getCell(x, y).h < 0)
                         continue;
 
+                    @SuppressWarnings("DuplicatedCode")
                     Cell curCell = bulk.getCell(x, y);
                     Cell leftCell = bulk.getCell(x - 1, y);
                     Cell rightCell = bulk.getCell(x + 1, y);
@@ -58,8 +59,28 @@ public class Decomposer {
                         downDiff[2] = downCell.qy - curCell.qy;
                     }
 
+                    float horizontalGradient = 0;
+                    float verticalGradient = 0;
+
+                    if (wallGrid.canFlowLeft(x, y))
+                        horizontalGradient -= leftCell.h;
+                    else horizontalGradient -= curCell.h;
+
+                    if (wallGrid.canFlowRight(x, y))
+                        horizontalGradient += rightCell.h;
+                    else horizontalGradient += curCell.h;
+
+                    if (wallGrid.canFlowUp(x, y))
+                        verticalGradient -= upCell.h;
+                    else verticalGradient -= curCell.h;
+
+                    if (wallGrid.canFlowDown(x, y))
+                        verticalGradient += downCell.h;
+                    else verticalGradient += curCell.h;
+
+                    float gradientLength = (float) Math.sqrt(Math.pow(horizontalGradient, 2) + Math.pow(verticalGradient, 2));
                     float cellSizeSquared = (float) Math.pow(Config.CELL_SIZE, 2);
-                    float diffusionCoefficient = (float) (Math.pow(grid.getCell(x, y).h, 2) / 64);
+                    float diffusionCoefficient = (float) ((Math.pow(grid.getCell(x, y).h, 2) / 64) * Math.exp(-1f / 100 * Math.pow(gradientLength, 2)));
                     float timeStep = 0.25f;
 
                     float[] changes = new float[3];

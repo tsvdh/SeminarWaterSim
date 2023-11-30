@@ -21,12 +21,16 @@ public class Config {
         int fps;
         int seconds;
         boolean separateFiles;
+        int width;
+        int height;
     }
 
     // config variables
     public static float TIME_STEP;
     public static float LENGTH;
     public static boolean SEPARATE_FILES;
+    public static int WIDTH;
+    public static int HEIGHT;
 
     // constants
     public static int CELL_SIZE = 1;
@@ -43,6 +47,8 @@ public class Config {
             TIME_STEP = 1f / configFile.fps;
             LENGTH = configFile.seconds;
             SEPARATE_FILES = configFile.separateFiles;
+            WIDTH = configFile.width;
+            HEIGHT = configFile.height;
         }
         catch (IOException e) {
             throw new RuntimeException(e);
