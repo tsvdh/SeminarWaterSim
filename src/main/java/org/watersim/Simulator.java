@@ -55,9 +55,11 @@ public class Simulator {
             }
         }
 
+        // Compute surface and bulk components
         Grid newBulk = BulkFlowComputer.computeNewBulkUAndQ(grid, bulk, wallGrid);
         Grid newSurface = AiryWaveComputer.computeSurfaceQ(grid, surface, prevSurface);
 
+        // Transport surface through bulk flow
         Grid transportedSurface = SurfaceTransporter.transportSurface(surface, newSurface, bulk, newBulk);
 
         Grid newGrid = new Grid(WIDTH, HEIGHT);
@@ -72,6 +74,7 @@ public class Simulator {
         }
         newGrid.clampQ(grid.computeUpwindH());
 
+        // Compute new divergence for height update
         Grid tempGrid = new Grid(WIDTH, HEIGHT);
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
@@ -84,7 +87,6 @@ public class Simulator {
                 tempCell.qy = newCell.qy + transportedCell.h * newBulkCell.uy;
             }
         }
-
         tempGrid.computeDivergence();
 
         // update heights with flow divergence

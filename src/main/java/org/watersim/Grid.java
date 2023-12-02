@@ -296,7 +296,7 @@ public class Grid {
     }
 
     private static float clampQ(float q, float h) {
-        float qMax = h * Config.CELL_SIZE / (4 * Config.TIME_STEP);
+        float qMax = Math.abs(h) * Config.CELL_SIZE / (4 * Config.TIME_STEP);
 
         return Math.clamp(q, -qMax, qMax);
     }

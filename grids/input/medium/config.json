@@ -2,6 +2,6 @@
     "fps": 30,
     "seconds": 5,
     "separateFiles": true,
-    "width": 128,
-    "height": 128
+    "width": 32,
+    "height": 32
 }
