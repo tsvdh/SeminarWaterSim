@@ -12,14 +12,11 @@ import java.util.stream.Stream;
 public class Main {
 
     public static void main(String[] args) {
-        String name = "medium";
-
-        Config.readConfig(Paths.get("grids/input/%s/config.json".formatted(name)));
-
-        System.out.printf("Simulating '%s'\n", name);
+        Config.readConfig();
+        System.out.printf("Simulating '%s'\n", Config.NAME);
 
         String outPath = "grids/output/%s/%s.txt";
-        Path parentPath = Paths.get(outPath.formatted(name, 0)).getParent();
+        Path parentPath = Paths.get(outPath.formatted(Config.NAME, 0)).getParent();
 
         try {
             Files.createDirectories(parentPath);
@@ -41,7 +38,7 @@ public class Main {
 
         try {
             BufferedWriter writer = null;
-            Path fullFilePath = Paths.get(outPath.formatted(name, "full"));
+            Path fullFilePath = Paths.get(outPath.formatted(Config.NAME, "full"));
             if (!Config.SEPARATE_FILES) {
                 try {
                     Files.deleteIfExists(fullFilePath);
@@ -51,9 +48,9 @@ public class Main {
                 }
             }
 
-            var simulator = new Simulator(Paths.get("grids/input/%s/data.txt".formatted(name)));
+            var simulator = new Simulator(Paths.get("grids/input/%s/data.txt".formatted(Config.NAME)));
             if (Config.SEPARATE_FILES)
-                simulator.getGrid().dump(outPath.formatted(name, 0));
+                simulator.getGrid().dump(outPath.formatted(Config.NAME, 0));
             else {
                 assert writer != null;
                 writer.write(simulator.getGrid().toString());
@@ -65,7 +62,7 @@ public class Main {
                     Grid newGrid = simulator.makeNewGrid();
 
                     if (Config.SEPARATE_FILES)
-                        newGrid.dump(outPath.formatted(name, Config.FRAME));
+                        newGrid.dump(outPath.formatted(Config.NAME, Config.FRAME));
                     else {
                         assert writer != null;
                         writer.write(newGrid.toString());

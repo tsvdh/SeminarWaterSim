@@ -9,12 +9,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Config {
 
     @NoArgsConstructor
     @Getter @Setter
-    private static class ConfigFile {
+    private static class SimConfig {
         int fps;
         int seconds;
         boolean separateFiles;
@@ -24,7 +25,16 @@ public class Config {
         boolean airy;
     }
 
-    // config variables
+    @NoArgsConstructor
+    @Getter @Setter
+    private static class GlobalConfig {
+        String name;
+    }
+
+    // global config variables
+    public static String NAME;
+
+    // sim config variables
     public static float TIME_STEP;
     public static float LENGTH;
     public static boolean SEPARATE_FILES;
@@ -40,18 +50,29 @@ public class Config {
     // runtime variables
     public static int FRAME = 1;
 
-    public static void readConfig(Path path) {
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
-            var mapper = new ObjectMapper();
-            ConfigFile configFile = mapper.readValue(reader, ConfigFile.class);
+    public static void readConfig() {
+        var mapper = new ObjectMapper();
 
-            TIME_STEP = 1f / configFile.fps;
-            LENGTH = configFile.seconds;
-            SEPARATE_FILES = configFile.separateFiles;
-            WIDTH = configFile.width;
-            HEIGHT = configFile.height;
-            SWE = configFile.swe;
-            Airy = configFile.airy;
+        Path globalConfigPath = Paths.get("grids/input/config.json");
+        try (BufferedReader reader = Files.newBufferedReader(globalConfigPath)) {
+            GlobalConfig globalConfig = mapper.readValue(reader, GlobalConfig.class);
+            NAME = globalConfig.name;
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Path simConfigPath = Paths.get("grids/input/%s/config.json".formatted(NAME));
+        try (BufferedReader reader = Files.newBufferedReader(simConfigPath)) {
+            SimConfig simConfig = mapper.readValue(reader, SimConfig.class);
+
+            TIME_STEP = 1f / simConfig.fps;
+            LENGTH = simConfig.seconds;
+            SEPARATE_FILES = simConfig.separateFiles;
+            WIDTH = simConfig.width;
+            HEIGHT = simConfig.height;
+            SWE = simConfig.swe;
+            Airy = simConfig.airy;
         }
         catch (IOException e) {
             throw new RuntimeException(e);
