@@ -1,7 +1,6 @@
 package org.watersim;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Config {
 
@@ -23,6 +20,8 @@ public class Config {
         boolean separateFiles;
         int width;
         int height;
+        boolean swe;
+        boolean airy;
     }
 
     // config variables
@@ -31,6 +30,8 @@ public class Config {
     public static boolean SEPARATE_FILES;
     public static int WIDTH;
     public static int HEIGHT;
+    public static boolean SWE;
+    public static boolean Airy;
 
     // constants
     public static int CELL_SIZE = 1;
@@ -49,6 +50,8 @@ public class Config {
             SEPARATE_FILES = configFile.separateFiles;
             WIDTH = configFile.width;
             HEIGHT = configFile.height;
+            SWE = configFile.swe;
+            Airy = configFile.airy;
         }
         catch (IOException e) {
             throw new RuntimeException(e);

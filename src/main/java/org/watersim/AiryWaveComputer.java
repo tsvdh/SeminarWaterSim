@@ -74,7 +74,7 @@ public class AiryWaveComputer {
                 float imShiftedDY = realDY * shiftImY + imDY * shiftRealY;
 
                 for (int i = 0; i < 4; i++) {
-                    float beta = (float) (Math.sqrt(2 * k / Config.CELL_SIZE) * Math.sqrt(Math.sin(k * Config.CELL_SIZE / 2)));
+                    float beta = (float) (Math.sqrt(2 / (k * Config.CELL_SIZE) * Math.sin(k * Config.CELL_SIZE / 2)));
                     float omega = (float) Math.sqrt(Config.GRAVITY * k * Math.tanh(k * heights[i])) / beta;
 
                     float qPart = k == 0 ? 0 : (float) Math.cos(omega * Config.TIME_STEP);

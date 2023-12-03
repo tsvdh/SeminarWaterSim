@@ -16,6 +16,8 @@ public class Main {
 
         Config.readConfig(Paths.get("grids/input/%s/config.json".formatted(name)));
 
+        System.out.printf("Simulating '%s'\n", name);
+
         String outPath = "grids/output/%s/%s.txt";
         Path parentPath = Paths.get(outPath.formatted(name, 0)).getParent();
 

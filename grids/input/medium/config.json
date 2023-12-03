@@ -1,7 +1,9 @@
 {
-    "fps": 30,
+    "fps": 60,
     "seconds": 5,
     "separateFiles": true,
     "width": 32,
-    "height": 32
+    "height": 32,
+    "swe": true,
+    "airy": true
 }

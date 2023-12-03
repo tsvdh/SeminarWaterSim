@@ -5,7 +5,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.Path;
 
+import static org.watersim.Config.Airy;
 import static org.watersim.Config.HEIGHT;
+import static org.watersim.Config.SWE;
 import static org.watersim.Config.WIDTH;
 
 public class Simulator {
@@ -28,15 +30,29 @@ public class Simulator {
         prevBulk = prevGrids.getLeft();
         prevSurface = prevGrids.getRight();
 
+        if (Config.CELL_SIZE != 1)
+            throw new RuntimeException();
+
+        if (grid.WIDTH != WIDTH || grid.HEIGHT != HEIGHT)
+            throw new RuntimeException();
+
         if (grid.WIDTH != grid.HEIGHT || wallGrid.WIDTH != grid.HEIGHT)
             throw new RuntimeException();
     }
 
     public Grid makeNewGrid() {
-        if (Config.CELL_SIZE != 1)
+        Pair<Grid, Grid> grids;
+
+        if (SWE && Airy)
+            grids = Decomposer.decompose(grid, wallGrid);
+        else if (SWE)
+            grids = Decomposer.decomposeBulkOnly(grid);
+        else if (Airy)
+            grids = Decomposer.decomposeSurfaceOnly(grid);
+        else
             throw new RuntimeException();
 
-        Pair<Grid, Grid> grids = Decomposer.decompose(grid, wallGrid);
+
         Grid bulk = grids.getLeft();
         Grid surface = grids.getRight();
 

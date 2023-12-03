@@ -3,5 +3,7 @@
     "seconds": 5,
     "separateFiles": true,
     "width": 128,
-    "height": 128
+    "height": 128,
+    "swe": false,
+    "airy": true
 }
