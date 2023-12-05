@@ -52,22 +52,20 @@ public class Simulator {
         else
             throw new RuntimeException();
 
-
         Grid bulk = grids.getLeft();
         Grid surface = grids.getRight();
 
         // compute u velocities
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
-                Cell cell = bulk.getCell(x, y);
-
+                Cell bulkCell = bulk.getCell(x, y);
                 Pair<Float, Float> upwindH = prevBulk.getUpwindH(x, y);
 
                 // do not compute for walls
                 if (wallGrid.canFlowRight(x, y))
-                    cell.ux = upwindH.getLeft() == 0 ? 0 : cell.qx / upwindH.getLeft();
+                    bulkCell.ux = upwindH.getLeft() == 0 ? 0 : bulkCell.qx / upwindH.getLeft();
                 if (wallGrid.canFlowDown(x, y))
-                    cell.uy = upwindH.getRight() == 0 ? 0 : cell.qy / upwindH.getRight();
+                    bulkCell.uy = upwindH.getRight() == 0 ? 0 : bulkCell.qy / upwindH.getRight();
             }
         }
 

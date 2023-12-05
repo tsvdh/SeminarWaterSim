@@ -1,7 +1,5 @@
 package org.watersim;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import static org.watersim.Config.HEIGHT;
 import static org.watersim.Config.WIDTH;
 
@@ -32,15 +30,21 @@ public class SurfaceTransporter {
             for (int x = 1; x <= WIDTH; x++) {
                 Cell surfaceCell = surface.getCell(x, y);
                 Cell newSurfaceCell = newSurface.getCell(x, y);
-                Cell averageBulkCell = averageBulk.getCell(x, y);
+                Cell curAverageBulkCell = averageBulk.getCell(x, y);
+                Cell rightAverageBulkCell = averageBulk.getCell(x + 1, y);
+                Cell downAverageBulkCell = averageBulk.getCell(x, y + 1);
                 Cell newBulkCell = bulk.getCell(x, y);
                 Cell dampedCell = dampedSurface.getCell(x, y);
 
-                float qG = Math.min(-averageBulkCell.divU, GAMMA * -averageBulkCell.divU);
+                float divUX = (curAverageBulkCell.divU + rightAverageBulkCell.divU) / 2;
+                float divUY = (curAverageBulkCell.divU + downAverageBulkCell.divU) / 2;
+
+                float qGX = Math.min(-divUX, GAMMA * -divUX);
+                float qGY = Math.min(-divUY, GAMMA * -divUY);
                 float hG = Math.min(-newBulkCell.divU, GAMMA * -newBulkCell.divU);
 
-                dampedCell.qx = newSurfaceCell.qx * (float) Math.exp(qG * Config.TIME_STEP);
-                dampedCell.qy = newSurfaceCell.qy * (float) Math.exp(qG * Config.TIME_STEP);
+                dampedCell.qx = newSurfaceCell.qx * (float) Math.exp(qGX * Config.TIME_STEP);
+                dampedCell.qy = newSurfaceCell.qy * (float) Math.exp(qGY * Config.TIME_STEP);
                 dampedCell.h = surfaceCell.h * (float) Math.exp(hG * Config.TIME_STEP);
             }
         }
@@ -49,15 +53,12 @@ public class SurfaceTransporter {
 
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
-                Cell uCurcell = newBulk.getCell(x, y);
-                Cell uLeftCell = newBulk.getCell(x, y);
-                Cell uTopCell = newBulk.getCell(x, y);
-
                 // --- Semi-Lagrangian advection on Q ---
+                Cell averageUCurCell = averageBulk.getCell(x, y);
 
                 // Trace back to starting position
-                float xPosQ = (float) Math.clamp(x + 0.5 - (uCurcell.ux * Config.TIME_STEP), 0.5, WIDTH + 0.5);
-                float yPosQ = (float) Math.clamp(y + 0.5 - (uCurcell.uy * Config.TIME_STEP), 0.5, HEIGHT + 0.5);
+                float xPosQ = (float) Math.clamp(x + 0.5 - (averageUCurCell.ux * Config.TIME_STEP), 0.5, WIDTH + 0.5);
+                float yPosQ = (float) Math.clamp(y + 0.5 - (averageUCurCell.uy * Config.TIME_STEP), 0.5, HEIGHT + 0.5);
 
                 // TODO: consider walls
 
@@ -79,9 +80,12 @@ public class SurfaceTransporter {
                 advectedCell.qy = lerp(upCell.qy, downCell.qy, verticalWeight);
 
                 // --- Semi-Lagrangian advection on H ---
+                Cell newUCurCell = newBulk.getCell(x, y);
+                Cell newULeftCell = newBulk.getCell(x - 1, y);
+                Cell newUTopCell = newBulk.getCell(x, y - 1);
 
-                float horizontalU = (uCurcell.ux + uLeftCell.ux) / 2;
-                float verticalU = (uCurcell.uy + uTopCell.uy) / 2;
+                float horizontalU = (newUCurCell.ux + newULeftCell.ux) / 2;
+                float verticalU = (newUCurCell.uy + newUTopCell.uy) / 2;
 
                 // Trace back to starting position
                 // Transport forward in time only half a time step
@@ -106,8 +110,6 @@ public class SurfaceTransporter {
                 advectedCell.h = lerp(lerpYMin, lerpYMax, yPosH - yMin);
             }
         }
-
-        advectedSurface.clampQ(new ImmutablePair<>(advectedSurface, advectedSurface));
 
         return advectedSurface;
     }
