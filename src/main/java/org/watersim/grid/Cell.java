@@ -1,4 +1,4 @@
-package org.watersim;
+package org.watersim.grid;
 
 public class Cell {
 

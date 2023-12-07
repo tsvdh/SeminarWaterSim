@@ -1,7 +1,8 @@
-package org.watersim;
+package org.watersim.grid;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.watersim.util.Config;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -10,11 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.watersim.Config.HEIGHT;
-import static org.watersim.Config.WIDTH;
 
 public class Grid {
 

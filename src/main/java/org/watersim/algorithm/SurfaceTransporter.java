@@ -1,7 +1,11 @@
-package org.watersim;
+package org.watersim.algorithm;
 
-import static org.watersim.Config.HEIGHT;
-import static org.watersim.Config.WIDTH;
+import org.watersim.grid.Cell;
+import org.watersim.util.Config;
+import org.watersim.grid.Grid;
+
+import static org.watersim.util.Config.HEIGHT;
+import static org.watersim.util.Config.WIDTH;
 
 public class SurfaceTransporter {
 

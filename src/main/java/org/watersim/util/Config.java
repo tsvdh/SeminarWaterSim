@@ -1,4 +1,4 @@
-package org.watersim;
+package org.watersim.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;

@@ -1,7 +1,5 @@
-package org.watersim;
+package org.watersim.grid;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class WallGrid extends Grid {

@@ -1,7 +1,9 @@
-package org.watersim;
+package org.watersim.algorithm;
 
 import org.jtransforms.fft.FloatFFT_2D;
-import java.util.Arrays;
+import org.watersim.grid.Cell;
+import org.watersim.util.Config;
+import org.watersim.grid.Grid;
 
 public class AiryWaveComputer {
 

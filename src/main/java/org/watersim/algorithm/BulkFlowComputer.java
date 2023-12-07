@@ -1,6 +1,10 @@
-package org.watersim;
+package org.watersim.algorithm;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.watersim.grid.Cell;
+import org.watersim.util.Config;
+import org.watersim.grid.Grid;
+import org.watersim.grid.WallGrid;
 
 import java.util.function.Function;
 

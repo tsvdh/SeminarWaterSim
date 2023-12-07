@@ -1,6 +1,9 @@
 package org.watersim;
 
 import me.tongfei.progressbar.ProgressBar;
+import org.watersim.algorithm.Simulator;
+import org.watersim.grid.Grid;
+import org.watersim.util.Config;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
