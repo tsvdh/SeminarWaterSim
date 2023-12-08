@@ -23,6 +23,7 @@ public class Config {
         int height;
         boolean swe;
         boolean airy;
+        boolean useBuilder;
     }
 
     @NoArgsConstructor
@@ -42,6 +43,7 @@ public class Config {
     public static int HEIGHT;
     public static boolean SWE;
     public static boolean Airy;
+    public static boolean USE_BUILDER;
 
     // constants
     public static int CELL_SIZE = 1;
@@ -73,6 +75,7 @@ public class Config {
             HEIGHT = simConfig.height;
             SWE = simConfig.swe;
             Airy = simConfig.airy;
+            USE_BUILDER = simConfig.useBuilder;
         }
         catch (IOException e) {
             throw new RuntimeException(e);

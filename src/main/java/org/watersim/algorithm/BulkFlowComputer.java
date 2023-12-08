@@ -8,6 +8,9 @@ import org.watersim.grid.WallGrid;
 
 import java.util.function.Function;
 
+import static org.watersim.util.Config.HEIGHT;
+import static org.watersim.util.Config.WIDTH;
+
 public class BulkFlowComputer {
 
     public static float computeUXDerivative(int x, int y, Grid bulk) {
@@ -114,11 +117,11 @@ public class BulkFlowComputer {
     }
 
     public static Grid computeNewBulkUAndQ(Grid grid, Grid bulk, WallGrid wallGrid) {
-        Grid newBulk = new Grid(grid.WIDTH, grid.HEIGHT);
+        Grid newBulk = new Grid();
 
         // compute new bulk u values
-        for (int y = 1; y <= grid.HEIGHT; y++) {
-            for (int x = 1; x <= grid.WIDTH; x++) {
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
                 // do not compute for walls
                 if (wallGrid.canFlowRight(x, y)) {
                     newBulk.getCell(x, y).ux = bulk.getCell(x, y).ux + BulkFlowComputer.computeUXDerivative(x, y, bulk) * Config.TIME_STEP;
@@ -132,8 +135,8 @@ public class BulkFlowComputer {
         newBulk.clampU();
 
         // compute q bulk values
-        for (int y = 1; y <= grid.HEIGHT; y++) {
-            for (int x = 1; x <= grid.WIDTH; x++) {
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
                 Cell cell = newBulk.getCell(x, y);
 
                 Pair<Float, Float> upwindH = bulk.getUpwindH(x, y);

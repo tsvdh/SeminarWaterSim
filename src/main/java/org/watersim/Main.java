@@ -4,6 +4,7 @@ import me.tongfei.progressbar.ProgressBar;
 import org.watersim.algorithm.Simulator;
 import org.watersim.grid.Grid;
 import org.watersim.util.Config;
+import org.watersim.util.GridBuilder;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,6 +17,12 @@ public class Main {
 
     public static void main(String[] args) {
         Config.readConfig();
+
+        if (Config.USE_BUILDER) {
+            System.out.printf("Building grids for '%s'\n".formatted(Config.NAME));
+            GridBuilder.buildGrid();
+        }
+
         System.out.printf("Simulating '%s'\n", Config.NAME);
 
         String outPath = "grids/output/%s/%s.txt";

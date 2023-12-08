@@ -13,16 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.watersim.util.Config.HEIGHT;
+import static org.watersim.util.Config.WIDTH;
+
 public class Grid {
+
+    public enum DataType {
+        H, QX, QY
+    }
 
     private Cell[][] cells;
 
-    public int WIDTH, HEIGHT;
-
-    public Grid(int width, int height) {
-        this.WIDTH = width;
-        this.HEIGHT = height;
-        cells = new Cell[height + 2][width + 2];
+    public Grid() {
+        cells = new Cell[HEIGHT + 2][WIDTH + 2];
 
         for (int x = 0; x <= WIDTH + 1; x++) {
             for (int y = 0; y <= HEIGHT + 1; y++) {
@@ -75,8 +78,10 @@ public class Grid {
             }
         }
 
-        this.WIDTH = heightsList.get(0).length;
-        this.HEIGHT = heightsList.size();
+        if (WIDTH != heightsList.getFirst().length
+                || HEIGHT != heightsList.size()) {
+            throw new RuntimeException();
+        }
 
         cells = new Cell[HEIGHT + 2][WIDTH + 2];
 
@@ -100,21 +105,29 @@ public class Grid {
     public String toString() {
         var builder = new StringBuilder();
 
-        for (int i = 0; i < 3; i++) {
-            for (int y = 1; y <= HEIGHT; y++) {
-                for (int x = 1; x <= WIDTH; x++) {
-                    Cell cell = getCell(x, y);
-                    builder.append(switch (i) {
-                        case 0 -> cell.h;
-                        case 1 -> cell.qx;
-                        case 2 -> cell.qy;
-                        default -> throw new RuntimeException();
-                    });
-                    builder.append(" ");
-                }
-                builder.append("\n");
-            }
+        for (DataType type : DataType.values()) {
+            builder.append(toString(type));
             builder.append("-\n");
+        }
+
+        return builder.toString();
+    }
+
+    public String toString(DataType type) {
+        var builder = new StringBuilder();
+
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
+                Cell cell = getCell(x, y);
+                builder.append(switch (type) {
+                    case H -> cell.h;
+                    case QX -> cell.qx;
+                    case QY -> cell.qy;
+                    default -> throw new RuntimeException();
+                });
+                builder.append(" ");
+            }
+            builder.append("\n");
         }
 
         return builder.toString();
@@ -138,7 +151,7 @@ public class Grid {
     }
 
     public Grid copy() {
-        Grid newGrid = new Grid(WIDTH, HEIGHT);
+        Grid newGrid = new Grid();
 
         for (int x = 0; x <= WIDTH + 1; x++) {
             for (int y = 0; y <= HEIGHT + 1; y++) {
@@ -244,8 +257,8 @@ public class Grid {
     }
 
     public Pair<Grid, Grid> computeUpwindH() {
-        Grid heightsX = new Grid(WIDTH, HEIGHT);
-        Grid heightsY = new Grid(WIDTH, HEIGHT);
+        Grid heightsX = new Grid();
+        Grid heightsY = new Grid();
 
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {

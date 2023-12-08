@@ -12,7 +12,7 @@ public class SurfaceTransporter {
     private static final float GAMMA = 1f / 4;
 
     public static Grid transportSurface(Grid surface, Grid newSurface, Grid bulk, Grid newBulk) {
-        Grid averageBulk = new Grid(WIDTH, HEIGHT);
+        Grid averageBulk = new Grid();
 
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
@@ -28,7 +28,7 @@ public class SurfaceTransporter {
         averageBulk.computeDivergence();
         newBulk.computeDivergence();
 
-        Grid dampedSurface = new Grid(WIDTH, HEIGHT);
+        Grid dampedSurface = new Grid();
 
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
@@ -53,7 +53,7 @@ public class SurfaceTransporter {
             }
         }
 
-        Grid advectedSurface = new Grid(WIDTH, HEIGHT);
+        Grid advectedSurface = new Grid();
 
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {

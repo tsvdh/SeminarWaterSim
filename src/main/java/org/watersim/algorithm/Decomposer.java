@@ -13,21 +13,21 @@ import static org.watersim.util.Config.WIDTH;
 public class Decomposer {
 
     public static Pair<Grid, Grid> decomposeBulkOnly(Grid grid) {
-        return new ImmutablePair<>(grid.copy(), new Grid(WIDTH, HEIGHT));
+        return new ImmutablePair<>(grid.copy(), new Grid());
     }
 
     public static Pair<Grid, Grid> decomposeSurfaceOnly(Grid grid) {
-        return new ImmutablePair<>(new Grid(WIDTH, HEIGHT), grid.copy());
+        return new ImmutablePair<>(new Grid(), grid.copy());
     }
 
     public static Pair<Grid, Grid> decompose(Grid grid, WallGrid wallGrid) {
-        var surface = new Grid(WIDTH, HEIGHT);
+        var surface = new Grid();
         var bulk = grid.copy();
 
-        var diffusionCoefficients = new Grid(WIDTH, HEIGHT);
+        var diffusionCoefficients = new Grid();
 
-        for (int y = 0; y <= grid.WIDTH; y++) {
-            for (int x = 0; x <= grid.HEIGHT; x++) {
+        for (int y = 0; y <= WIDTH; y++) {
+            for (int x = 0; x <= HEIGHT; x++) {
                 Cell curCell = grid.getCell(x, y);
                 Cell rightCell = grid.getCell(x + 1, y);
                 Cell downCell = grid.getCell(x, y + 1);
@@ -55,8 +55,8 @@ public class Decomposer {
         for (int i = 0; i < 128; i++) {
             var newBulk = bulk.copy();
 
-            for (int y = 1; y <= grid.WIDTH; y++) {
-                for (int x = 1; x <= grid.HEIGHT; x++) {
+            for (int y = 1; y <= WIDTH; y++) {
+                for (int x = 1; x <= HEIGHT; x++) {
                     if (grid.getCell(x, y).h == 0 || wallGrid.getCell(x, y).h < 0)
                         continue;
 
@@ -124,8 +124,8 @@ public class Decomposer {
             bulk = newBulk;
         }
 
-        for (int x = 1; x <= grid.WIDTH; x++) {
-            for (int y = 1; y <= grid.HEIGHT; y++) {
+        for (int x = 1; x <= WIDTH; x++) {
+            for (int y = 1; y <= HEIGHT; y++) {
                 surface.getCell(x, y).h = grid.getCell(x, y).h - bulk.getCell(x, y).h;
                 surface.getCell(x, y).qx = grid.getCell(x, y).qx - bulk.getCell(x, y).qx;
                 surface.getCell(x, y).qy = grid.getCell(x, y).qy - bulk.getCell(x, y).qy;

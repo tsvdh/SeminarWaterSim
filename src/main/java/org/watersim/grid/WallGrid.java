@@ -2,10 +2,13 @@ package org.watersim.grid;
 
 import java.nio.file.Path;
 
+import static org.watersim.util.Config.HEIGHT;
+import static org.watersim.util.Config.WIDTH;
+
 public class WallGrid extends Grid {
 
-    public WallGrid(int width, int height) {
-        super(width, height);
+    public WallGrid() {
+        super();
         createBoundaryWalls();
     }
 

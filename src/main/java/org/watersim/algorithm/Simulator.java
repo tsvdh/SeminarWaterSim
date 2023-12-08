@@ -36,12 +36,6 @@ public class Simulator {
 
         if (Config.CELL_SIZE != 1)
             throw new RuntimeException();
-
-        if (grid.WIDTH != WIDTH || grid.HEIGHT != HEIGHT)
-            throw new RuntimeException();
-
-        if (grid.WIDTH != grid.HEIGHT || wallGrid.WIDTH != grid.HEIGHT)
-            throw new RuntimeException();
     }
 
     public Grid makeNewGrid() {
@@ -80,7 +74,7 @@ public class Simulator {
         // Transport surface through bulk flow
         Grid transportedSurface = SurfaceTransporter.transportSurface(surface, newSurface, bulk, newBulk);
 
-        Grid newGrid = new Grid(WIDTH, HEIGHT);
+        Grid newGrid = new Grid();
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
                 Cell newCell = newGrid.getCell(x, y);
@@ -93,7 +87,7 @@ public class Simulator {
         newGrid.clampQ(grid.computeUpwindH());
 
         // Compute new divergence for height update
-        Grid tempGrid = new Grid(WIDTH, HEIGHT);
+        Grid tempGrid = new Grid();
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
                 Cell tempCell = tempGrid.getCell(x, y);

@@ -5,18 +5,21 @@ import org.watersim.grid.Cell;
 import org.watersim.util.Config;
 import org.watersim.grid.Grid;
 
+import static org.watersim.util.Config.HEIGHT;
+import static org.watersim.util.Config.WIDTH;
+
 public class AiryWaveComputer {
 
     public static Grid computeSurfaceQ(Grid grid, Grid surface, Grid prevSurface) {
         // set up arrays
-        float[][] surfaceH = new float[grid.HEIGHT][grid.WIDTH * 2];
-        float[][] surfaceQX = new float[grid.HEIGHT][grid.WIDTH * 2];
-        float[][] surfaceQY = new float[grid.HEIGHT][grid.WIDTH * 2];
-        float[][][] newSurfaceQX = new float[4][grid.HEIGHT][grid.WIDTH * 2];
-        float[][][] newSurfaceQY = new float[4][grid.HEIGHT][grid.WIDTH * 2];
+        float[][] surfaceH = new float[HEIGHT][WIDTH * 2];
+        float[][] surfaceQX = new float[HEIGHT][WIDTH * 2];
+        float[][] surfaceQY = new float[HEIGHT][WIDTH * 2];
+        float[][][] newSurfaceQX = new float[4][HEIGHT][WIDTH * 2];
+        float[][][] newSurfaceQY = new float[4][HEIGHT][WIDTH * 2];
 
-        for (int y = 1; y <= grid.HEIGHT; y++) {
-            for (int x = 1; x <= grid.WIDTH; x++) {
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
                 surfaceH[y - 1][x - 1] = (surface.getCell(x, y).h + prevSurface.getCell(x, y).h) / 2;
                 surfaceQX[y - 1][x - 1] = surface.getCell(x, y).qx;
                 surfaceQY[y - 1][x - 1] = surface.getCell(x, y).qy;
@@ -30,27 +33,27 @@ public class AiryWaveComputer {
         }
 
         // compute fft arrays
-        var fft = new FloatFFT_2D(grid.WIDTH, grid.HEIGHT);
+        var fft = new FloatFFT_2D(WIDTH, HEIGHT);
         fft.realForwardFull(surfaceH);
         fft.realForwardFull(surfaceQX);
         fft.realForwardFull(surfaceQY);
 
-        float half = grid.WIDTH / 2f;
+        float half = WIDTH / 2f;
 
-        for (int x = 0; x < grid.WIDTH; x++) {
+        for (int x = 0; x < WIDTH; x++) {
             int realX = x * 2;
             int imX = realX + 1;
 
-            for (int y = 0; y < grid.HEIGHT; y++) {
+            for (int y = 0; y < HEIGHT; y++) {
                 float kX = x < half ? x
-                        : x > half ? x - grid.WIDTH
+                        : x > half ? x - WIDTH
                         : 0;
                 float kY = y < half ? y
-                        : y > half ? y - grid.HEIGHT
+                        : y > half ? y - HEIGHT
                         : 0;
 
-                kX = (float) (2 * Math.PI * kX / grid.WIDTH);
-                kY = (float) (2 * Math.PI * kY / grid.HEIGHT);
+                kX = (float) (2 * Math.PI * kX / WIDTH);
+                kY = (float) (2 * Math.PI * kY / HEIGHT);
 
                 float k = (float) Math.sqrt(Math.pow(kX, 2) + Math.pow(kY, 2));
 
@@ -96,13 +99,13 @@ public class AiryWaveComputer {
             fft.complexInverse(newSurfaceQY[i], true);
         }
 
-        var newSurface = new Grid(grid.WIDTH, grid.HEIGHT);
+        var newSurface = new Grid();
 
         // interpolate to correct height
-        for (int y = 1; y <= grid.HEIGHT; y++) {
+        for (int y = 1; y <= HEIGHT; y++) {
             int yIndex = y - 1;
 
-            for (int x = 1; x <= grid.WIDTH; x++) {
+            for (int x = 1; x <= WIDTH; x++) {
                 int fftIndex = (x - 1) * 2;
 
                 int heightBelow = 0;
