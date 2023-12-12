@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Main {
@@ -67,22 +69,25 @@ public class Main {
                 writer.write("--\n");
             }
 
-            try (var bar = new ProgressBar("Sim", numFrames)) {
-                for (; Config.FRAME <= numFrames; Config.FRAME++) {
-                    Grid newGrid = simulator.makeNewGrid();
+            var bar = new ProgressBar("Sim", numFrames);
 
-                    if (Config.SEPARATE_FILES)
-                        newGrid.dump(outPath.formatted(Config.NAME, Config.FRAME));
-                    else {
-                        assert writer != null;
-                        writer.write(newGrid.toString());
-                        writer.write("--\n");
-                    }
+            for (; Config.FRAME <= numFrames; Config.FRAME++) {
+                Grid newGrid = simulator.makeNewGrid();
 
-                    bar.step();
-                    bar.refresh();
+                if (Config.SEPARATE_FILES)
+                    newGrid.dump(outPath.formatted(Config.NAME, Config.FRAME));
+                else {
+                    assert writer != null;
+                    writer.write(newGrid.toString());
+                    writer.write("--\n");
                 }
+
+                bar.step();
+                bar.refresh();
             }
+
+            bar.close();
+
             if (!Config.SEPARATE_FILES) {
                 assert writer != null;
                 writer.close();
@@ -93,5 +98,7 @@ public class Main {
 
         long simTime = System.currentTimeMillis() - simStart;
         System.out.printf("Sim took: %ss (%sms per frame)\n", simTime / 1000, simTime / numFrames);
+
+        System.exit(0);
     }
 }

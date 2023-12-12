@@ -1,17 +1,20 @@
 package org.watersim.algorithm;
 
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.watersim.grid.Cell;
+import org.watersim.grid.WallGrid;
 import org.watersim.util.Config;
 import org.watersim.grid.Grid;
 
 import static org.watersim.util.Config.HEIGHT;
 import static org.watersim.util.Config.WIDTH;
+import static org.watersim.util.Utils.lerp;
 
 public class SurfaceTransporter {
 
     private static final float GAMMA = 1f / 4;
 
-    public static Grid transportSurface(Grid surface, Grid newSurface, Grid bulk, Grid newBulk) {
+    public static Grid transportSurface(Grid surface, Grid newSurface, Grid bulk, Grid newBulk, WallGrid wallGrid) {
         Grid averageBulk = new Grid();
 
         for (int y = 1; y <= HEIGHT; y++) {
@@ -61,15 +64,35 @@ public class SurfaceTransporter {
                 Cell averageUCurCell = averageBulk.getCell(x, y);
 
                 // Trace back to starting position
-                float xPosQ = (float) Math.clamp(x + 0.5 - (averageUCurCell.ux * Config.TIME_STEP), 0.5, WIDTH + 0.5);
-                float yPosQ = (float) Math.clamp(y + 0.5 - (averageUCurCell.uy * Config.TIME_STEP), 0.5, HEIGHT + 0.5);
+                // float xPosQ = (float) Math.clamp(x + 0.5 - (averageUCurCell.ux * Config.TIME_STEP), 0.5, WIDTH + 0.5);
+                // float yPosQ = (float) Math.clamp(y + 0.5 - (averageUCurCell.uy * Config.TIME_STEP), 0.5, HEIGHT + 0.5);
+                float xPosQ = (float) wallClamp(
+                        new Vector2D(x + 0.5, y),
+                        new Vector2D(-averageUCurCell.ux * Config.TIME_STEP, 0),
+                        wallGrid
+                ).getX();
+                float yPosQ = (float) wallClamp(
+                        new Vector2D(x, y + 0.5),
+                        new Vector2D(0, -averageUCurCell.uy * Config.TIME_STEP),
+                        wallGrid
+                ).getY();
 
-                // TODO: consider walls
+                int leftPos = (int) Math.round(Math.floor(xPosQ - 0.5));
+                if (wallGrid.getCell(leftPos, y).h > 0)
+                    leftPos++;
 
-                int leftPos = (int) Math.max(Math.round(Math.floor(xPosQ - 0.5)), 1);
-                int rightPos = (int) Math.min(Math.round(Math.ceil(xPosQ - 0.5)), WIDTH);
-                int upPos = (int) Math.max(Math.round(Math.floor(yPosQ - 0.5)), 1);
-                int downPos = (int) Math.min(Math.round(Math.ceil(yPosQ - 0.5)), HEIGHT);
+                int rightPos = (int) Math.round(Math.ceil(xPosQ - 0.5));
+
+                int upPos = (int) Math.round(Math.floor(yPosQ - 0.5));
+                if (wallGrid.getCell(x, upPos).h > 0)
+                    upPos++;
+
+                int downPos = (int) Math.round(Math.ceil(yPosQ - 0.5));
+
+                // int leftPos = (int) Math.max(, 1);
+                // int rightPos = (int) Math.min(, WIDTH);
+                // int upPos = (int) Math.max(, 1);
+                // int downPos = (int) Math.min(, HEIGHT);
 
                 Cell leftCell = dampedSurface.getCell(leftPos, y);
                 Cell rightCell = dampedSurface.getCell(rightPos, y);
@@ -93,32 +116,63 @@ public class SurfaceTransporter {
 
                 // Trace back to starting position
                 // Transport forward in time only half a time step
-                float xPosH = (float) Math.clamp(x - (horizontalU * Config.TIME_STEP / 2), 0.5, WIDTH + 0.5);
-                float yPosH = (float) Math.clamp(y - (verticalU * Config.TIME_STEP / 2), 0.5, HEIGHT + 0.5);
+                // float xPosH = (float) Math.clamp(x - (horizontalU * Config.TIME_STEP / 2), 0.5, WIDTH + 0.5);
+                // float yPosH = (float) Math.clamp(y - (verticalU * Config.TIME_STEP / 2), 0.5, HEIGHT + 0.5);
 
-                // TODO: consider walls
+                Vector2D posH = wallClamp(
+                        new Vector2D(x, y),
+                        new Vector2D(horizontalU * Config.TIME_STEP / 2, verticalU * Config.TIME_STEP / 2).scalarMultiply(-1),
+                        wallGrid
+                );
 
-                int xMin = (int) Math.max(Math.round(Math.floor(xPosH)), 1);
-                int xMax = (int) Math.min(Math.round(Math.ceil(xPosH)), WIDTH);
-                int yMin = (int) Math.max(Math.round(Math.floor(yPosH)), 1);
-                int yMax = (int) Math.min(Math.round(Math.ceil(yPosH)), HEIGHT);
+                // int xMin = (int) Math.max(, 1);
+                // int xMax = (int) Math.min(, WIDTH);
+                // int yMin = (int) Math.max(, 1);
+                // int yMax = (int) Math.min(, HEIGHT);
+
+                int xMin = (int) Math.round(Math.floor(posH.getX()));
+                if (wallGrid.getCell(xMin, y).h > 0)
+                    xMin++;
+
+                int xMax = (int) Math.round(Math.ceil(posH.getX()));
+                if (wallGrid.getCell(xMax, y).h > 0)
+                    xMax--;
+
+                int yMin = (int) Math.round(Math.floor(posH.getY()));
+                if (wallGrid.getCell(x, yMin).h > 0)
+                    yMin++;
+
+                int yMax = (int) Math.round(Math.ceil(posH.getY()));
+                if (wallGrid.getCell(x, yMax).h > 0)
+                    yMax--;
 
                 float topLeftVal = dampedSurface.getCell(xMin, yMin).h;
                 float topRightVal = dampedSurface.getCell(xMax, yMin).h;
                 float bottomLeftVal = dampedSurface.getCell(xMin, yMax).h;
                 float bottomRightVal = dampedSurface.getCell(xMax, yMax).h;
 
-                float lerpYMin = lerp(topLeftVal, topRightVal, xPosH - xMin);
-                float lerpYMax = lerp(bottomLeftVal, bottomRightVal, xPosH - xMin);
+                float lerpYMin = lerp(topLeftVal, topRightVal, (float) posH.getX() - xMin);
+                float lerpYMax = lerp(bottomLeftVal, bottomRightVal, (float) posH.getX() - xMin);
 
-                advectedCell.h = lerp(lerpYMin, lerpYMax, yPosH - yMin);
+                advectedCell.h = lerp(lerpYMin, lerpYMax, (float) posH.getY() - yMin);
             }
         }
 
         return advectedSurface;
     }
 
-    private static float lerp(float a, float b, float w) {
-        return a * (1 - w) + b * w;
+    private static Vector2D wallClamp(Vector2D startPos, Vector2D diff, WallGrid walls) {
+        float numSteps = 5;
+
+        for (int i = 1; i <= numSteps; i++) {
+            Vector2D newPos = startPos.add(i / numSteps, diff);
+
+            int x = Math.clamp(Math.round(newPos.getX()), 0, WIDTH + 1);
+            int y = Math.clamp(Math.round(newPos.getY()), 0, HEIGHT + 1);
+            if (walls.getCell(x, y).h > 0) {
+                return startPos.add((i - 1) / numSteps, diff);
+            }
+        }
+        return startPos.add(diff);
     }
 }

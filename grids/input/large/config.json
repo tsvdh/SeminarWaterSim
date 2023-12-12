@@ -2,8 +2,9 @@
     "fps": 30,
     "seconds": 5,
     "separateFiles": true,
-    "width": 128,
-    "height": 128,
-    "swe": false,
-    "airy": true
+    "width": 256,
+    "height": 256,
+    "swe": true,
+    "airy": false,
+    "useBuilder": true
 }

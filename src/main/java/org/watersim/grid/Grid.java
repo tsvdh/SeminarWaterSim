@@ -276,8 +276,8 @@ public class Grid {
     }
 
     public void clampU() {
-        for (int y = 1; y < HEIGHT; y++) {
-            for (int x = 1; x < WIDTH; x++) {
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
                 Cell cell = getCell(x, y);
 
                 cell.ux = clampU(cell.ux);
@@ -290,8 +290,8 @@ public class Grid {
         Grid heightsX = upwindHeights.getLeft();
         Grid heightsY = upwindHeights.getRight();
 
-        for (int y = 1; y < HEIGHT; y++) {
-            for (int x = 1; x < WIDTH; x++) {
+        for (int y = 1; y <= HEIGHT; y++) {
+            for (int x = 1; x <= WIDTH; x++) {
                 Cell cell = getCell(x, y);
                 cell.qx = clampQ(cell.qx, heightsX.getCell(x, y).h);
                 cell.qy = clampQ(cell.qy, heightsY.getCell(x, y).h);

@@ -2,15 +2,17 @@ package org.watersim.algorithm;
 
 import org.jtransforms.fft.FloatFFT_2D;
 import org.watersim.grid.Cell;
+import org.watersim.grid.WallGrid;
 import org.watersim.util.Config;
 import org.watersim.grid.Grid;
 
 import static org.watersim.util.Config.HEIGHT;
 import static org.watersim.util.Config.WIDTH;
+import static org.watersim.util.Utils.lerp;
 
 public class AiryWaveComputer {
 
-    public static Grid computeSurfaceQ(Grid grid, Grid surface, Grid prevSurface) {
+    public static Grid computeSurfaceQ(Grid grid, Grid surface, Grid prevSurface, WallGrid wallGrid) {
         // set up arrays
         float[][] surfaceH = new float[HEIGHT][WIDTH * 2];
         float[][] surfaceQX = new float[HEIGHT][WIDTH * 2];
@@ -130,11 +132,11 @@ public class AiryWaveComputer {
 
                 float qXBelow = newSurfaceQX[heightBelow][yIndex][fftIndex];
                 float qXAbove = newSurfaceQX[heightAbove][yIndex][fftIndex];
-                cell.qx = qXBelow * (1 - w) + qXAbove * w;
+                cell.qx = lerp(qXBelow, qXAbove, w);
 
                 float qYBelow = newSurfaceQY[heightBelow][yIndex][fftIndex];
                 float qYAbove = newSurfaceQY[heightAbove][yIndex][fftIndex];
-                cell.qy = qYBelow * (1 - w) + qYAbove * w;
+                cell.qy = lerp(qYBelow, qYAbove, w);
             }
         }
 

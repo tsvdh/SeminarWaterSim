@@ -116,8 +116,8 @@ public class Decomposer {
 
                     Cell newCell = newBulk.getCell(x, y);
                     newCell.h += changes[0];
-                    newCell.qx += changes[1];
-                    newCell.qy += changes[2];
+                    newCell.qx += wallGrid.canFlowRight(x, y) ? changes[1] : 0;
+                    newCell.qy += wallGrid.canFlowDown(x, y) ? changes[2] : 0;
                 }
             }
 

@@ -30,7 +30,7 @@ public class Simulator {
         grid = input.getLeft();
         wallGrid = input.getRight();
 
-        Pair<Grid, Grid> prevGrids = Decomposer.decompose(grid.copy(), wallGrid);
+        Pair<Grid, Grid> prevGrids = decomposeGrid();
         prevBulk = prevGrids.getLeft();
         prevSurface = prevGrids.getRight();
 
@@ -38,17 +38,19 @@ public class Simulator {
             throw new RuntimeException();
     }
 
-    public Grid makeNewGrid() {
-        Pair<Grid, Grid> grids;
-
+    private Pair<Grid, Grid> decomposeGrid() {
         if (SWE && Airy)
-            grids = Decomposer.decompose(grid, wallGrid);
+            return Decomposer.decompose(grid, wallGrid);
         else if (SWE)
-            grids = Decomposer.decomposeBulkOnly(grid);
+            return Decomposer.decomposeBulkOnly(grid);
         else if (Airy)
-            grids = Decomposer.decomposeSurfaceOnly(grid);
+            return Decomposer.decomposeSurfaceOnly(grid);
         else
             throw new RuntimeException();
+    }
+
+    public Grid makeNewGrid() {
+        Pair<Grid, Grid> grids = decomposeGrid();
 
         Grid bulk = grids.getLeft();
         Grid surface = grids.getRight();
@@ -68,11 +70,11 @@ public class Simulator {
         }
 
         // Compute surface and bulk components
-        Grid newBulk = BulkFlowComputer.computeNewBulkUAndQ(grid, bulk, wallGrid);
-        Grid newSurface = AiryWaveComputer.computeSurfaceQ(grid, surface, prevSurface);
+        Grid newBulk = BulkFlowComputer.computeNewBulkUAndQ(bulk, wallGrid);
+        Grid newSurface = AiryWaveComputer.computeSurfaceQ(grid, surface, prevSurface, wallGrid);
 
         // Transport surface through bulk flow
-        Grid transportedSurface = SurfaceTransporter.transportSurface(surface, newSurface, bulk, newBulk);
+        Grid transportedSurface = SurfaceTransporter.transportSurface(surface, newSurface, bulk, newBulk, wallGrid);
 
         Grid newGrid = new Grid();
         for (int y = 1; y <= HEIGHT; y++) {
@@ -80,8 +82,12 @@ public class Simulator {
                 Cell newCell = newGrid.getCell(x, y);
                 Cell newBulkCell = newBulk.getCell(x, y);
                 Cell transportedCell = transportedSurface.getCell(x, y);
-                newCell.qx = newBulkCell.qx + transportedCell.qx;
-                newCell.qy = newBulkCell.qy + transportedCell.qy;
+                newCell.qx = wallGrid.canFlowRight(x, y)
+                        ? newBulkCell.qx + transportedCell.qx
+                        : 0;
+                newCell.qy = wallGrid.canFlowDown(x, y)
+                        ? newBulkCell.qy + transportedCell.qy
+                        : 0;
             }
         }
         newGrid.clampQ(grid.computeUpwindH());
@@ -104,7 +110,6 @@ public class Simulator {
         // update heights with flow divergence
         for (int y = 1; y <= HEIGHT; y++) {
             for (int x = 1; x <= WIDTH; x++) {
-                // TODO: perhaps only for non walls
                 Cell curCell = grid.getCell(x, y);
                 Cell newCell = newGrid.getCell(x, y);
                 Cell tempCell = tempGrid.getCell(x, y);

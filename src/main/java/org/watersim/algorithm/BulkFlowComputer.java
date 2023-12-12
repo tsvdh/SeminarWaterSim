@@ -116,7 +116,7 @@ public class BulkFlowComputer {
         return -1 * (firstPart + secondPart + thirdPart);
     }
 
-    public static Grid computeNewBulkUAndQ(Grid grid, Grid bulk, WallGrid wallGrid) {
+    public static Grid computeNewBulkUAndQ(Grid bulk, WallGrid wallGrid) {
         Grid newBulk = new Grid();
 
         // compute new bulk u values

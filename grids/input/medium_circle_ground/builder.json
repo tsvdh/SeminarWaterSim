@@ -3,12 +3,12 @@
         {
             "topLeft": [1, 1],
             "bottomRight": [32, 32],
-            "height": 10
+            "height": 0
         },
         {
-            "topLeft": [10, 10],
-            "bottomRight": [11, 11],
-            "height": 11
+            "topLeft": [13, 13],
+            "bottomRight": [19, 19],
+            "height": 7
         }
     ],
     "wall": [
