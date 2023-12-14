@@ -1,0 +1,31 @@
+{
+    "water": [
+        {
+            "topLeft": [1, 1],
+            "bottomRight": [128, 128],
+            "height": 1
+        },
+        {
+            "topLeft": [1, 1],
+            "bottomRight": [128, 50],
+            "height": 5
+        }
+    ],
+    "wall": [
+        {
+            "topLeft": [1, 51],
+            "bottomRight": [50, 60],
+            "height": 5
+        },
+        {
+            "topLeft": [71, 51],
+            "bottomRight": [128, 60],
+            "height": 5
+        },
+        {
+            "topLeft": [55, 63],
+            "bottomRight": [56, 64],
+            "height": 4
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "fps": 120,
+    "seconds": 5,
+    "separateFiles": true,
+    "width": 128,
+    "height": 128,
+    "swe": true,
+    "airy": true,
+    "useBuilder": true
+}
